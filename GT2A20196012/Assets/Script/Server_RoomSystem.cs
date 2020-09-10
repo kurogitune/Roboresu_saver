@@ -63,11 +63,12 @@ public class Server_RoomSystem : MonoBehaviour
                     Debug.Log("UDP受信待機　ip　" +ipAdd);
                     Debug.Log("UDP受信待機port　" +portNo+1);
                     //Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
-                    Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
+                   // Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
                     lisetensr = new TcpListener(ipAdd, portNo);// クライアント受け入れ用
+                    lisetensr.Start();
                     Debug.Log("TCP受信待機　ip　" + ipAdd);
                     Debug.Log("TCP受信待機port　" + portNo);
-                    Task.Run(() => TCPclientIN(lisetensr));//クライアント受入待機開始
+                    Task.Run(() => TCPclientIN());//クライアント受入待機開始
                     Invoke("tout",3);
                     break;
 
@@ -450,7 +451,7 @@ public class Server_RoomSystem : MonoBehaviour
     }
 
 
-    void TCPclientIN(TcpListener lisetensr)//TPCでのclient受け入れ非同期
+    void TCPclientIN()//TPCでのclient受け入れ非同期
     {
         while (!erro)
         {
