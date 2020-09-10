@@ -138,7 +138,7 @@ namespace resing_masterSaver
                     return;
                 }
 
-                if (count < Maxninzuu)
+                if (count <Maxninzuu)
                 {
                     Console.WriteLine(s + "_" + count);
                     sosin(ns, string.Format("{0}_{1}_{2}_{3}", s, count + 1, roompots[int.Parse(s)], IP));
@@ -262,7 +262,7 @@ namespace resing_masterSaver
 
                     string roomdata = zyusin(room);//ゲームサーバーからのデータ受信
                                                    //0:サーバー切断 　1:接続待機　２：メンバー決定  3:ステージが決定した  　4:全員がゲームを開始する準備完了した 　5:ゲーム中
-                    Console.WriteLine(roomdata);
+                   // Console.WriteLine(roomdata);
                     switch (roomdata)
                     {
                         case "1":
