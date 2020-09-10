@@ -63,7 +63,7 @@ public class Server_RoomSystem : MonoBehaviour
                     Debug.Log("UDP受信待機　ip　" +ipAdd);
                     Debug.Log("UDP受信待機port　" +portNo+1);
                     //Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
-                   // Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
+                    Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
                     lisetensr = new TcpListener(ipAdd, portNo);// クライアント受け入れ用
                     lisetensr.Start();
                     Debug.Log("TCP受信待機　ip　" + ipAdd);
@@ -231,6 +231,8 @@ public class Server_RoomSystem : MonoBehaviour
     {
         while (!erro)
         {
+            string sousindata = string.Format("{0},{}");
+
             tuusin.TCPsosin(string.Format("{0}", zyoutai));//部屋の状態送信
                                                            //0:通常待機　1：ゲーム開始 2:ゲーム中　3:ゲーム終了
         }
