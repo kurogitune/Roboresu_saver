@@ -19,12 +19,13 @@ public class Server_RoomSystem : MonoBehaviour
     public Text t;
 
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
-     UgokiIN[] INsystem =new UgokiIN[8];
-
+    UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
+    List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
     bool erro = false,roomMax=false,taiki=true,GameStart=false,haiti=false,haitiOK=false;
     string sousindt;//送信するデータ用
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか
     int StargNo,Ninzuu,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
+
     static public int portNo;//指定使用ポート番号
     // Start is called before the first frame update
     void Start()
@@ -46,7 +47,7 @@ public class Server_RoomSystem : MonoBehaviour
 
         try
         {
-            var tcp = new TcpClient("127.0.0.1", 2003);//サーバー管理システムに接続用
+            var tcp = new TcpClient("127.0.0.1", 2003);//マスターサーバーに接続用
             tuusin.nstIN(tcp.GetStream());
             string data=  tuusin.TCPzyusinTime_NO();
             string[] data2 = data.Split('_');
@@ -54,13 +55,14 @@ public class Server_RoomSystem : MonoBehaviour
             {
                 case "1111":
                     t.text = "接続完了";
-                    tuusin.TCPsosin(strIPAddress);
+                    tuusin.TCPsosin(strIPAddress);//マスターサーバーに部屋のIPを送信
                     portNo = int.Parse(data2[1]);
-                    tuusin.UDPIN(ipAdd,portNo);//UDPデータ代入
+                    tuusin.UDPIN(ipAdd,portNo+1);//UDPデータ代入
                     Debug.Log("受信待機ip　" +ipAdd);
-                    Debug.Log("受信待機ポート　" +portNo);
+                    Debug.Log("受信待機ポート　" +portNo+1);
                     Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
                     Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
+                    Task.Run(() => TCPclientIN(ipAdd,portNo));//クライアント受入待機開始
                     Invoke("tout",3);
                     break;
 
@@ -439,6 +441,19 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
                 }
             }
+        }
+    }
+
+
+    void TCPclientIN(IPAddress IP,int port)//TPCでのclient受け入れ非同期
+    {
+        TcpListener lisetensr = new TcpListener(IP, port);// 起動に必要なオブジェクトを作成（クライアント用）
+        while (!erro)
+        {
+            var tcp = lisetensr.AcceptTcpClient();//クライアントが接続しようとしたら 
+            NetworkStream ns = tcp.GetStream();
+            if (client.Count < client.Capacity) return;
+            client.Add(ns);
         }
     }
 

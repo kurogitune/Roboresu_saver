@@ -9,7 +9,7 @@ namespace System.Expansion//自作拡張
     public static class tuusin//通信システム
     {
         static Encoding ecn = Encoding.UTF8;//文字コード指定 
-        static NetworkStream nst;//サーバーデータ
+        static NetworkStream nst;//マスターサーバーデータ
         static UdpClient[] zyusinudp = new UdpClient[8];//ゲームサーバールームデータ
         public static string[] IPdata = new string[8];//送信する相手のIPアドレスデータ保存用
 
