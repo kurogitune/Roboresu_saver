@@ -95,6 +95,35 @@ namespace System.Expansion//自作拡張
             }
         }
 
+        public static string TCPzyusin_sitei(NetworkStream Net)//指定されたクライアントデータ受信用
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                byte[] resByte = new byte[256];
+                int resSize = 0;//受信した文字数
+
+                do
+                {
+                    resSize = Net.Read(resByte, 0, resByte.Length);//文字数記録
+                    if (resSize == 0) break;
+
+                    ms.Write(resByte, 0, resSize);//受信データ蓄積　文字　？　文字数
+                }
+                while (nst.DataAvailable || resByte[resSize - 1] != '\n');//読み取り可能データがあるか、データの最後が\nではない場合は受信を継続
+
+                string resMsg = ecn.GetString(ms.GetBuffer(), 0, (int)ms.Length);//受信データを文字列に変換
+                resMsg = resMsg.TrimEnd('\n');//文字最後の\nを消す
+                return resMsg;
+            }
+        }
+
+
+        public static void TCPsosin_sitei(NetworkStream ns,string s)//指定したクライアントにデータ送信処理
+        {
+            byte[] bun = ecn.GetBytes(s + '\n');//byteデータ作
+            ns.Write(bun, 0, bun.Length);//送信
+        }
+
         public static void UDPsousin(string s)//UDPでのデータ送信
         {
             byte[] bun = ecn.GetBytes(s);//送信データ作成

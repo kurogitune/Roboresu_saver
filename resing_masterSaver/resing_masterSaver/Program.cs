@@ -23,10 +23,9 @@ namespace resing_masterSaver
             static void Main(string[] args)
             {
                 room_Nyusitu[1] = room_Nyusitu[2] = room_Nyusitu[3] = true;
-
                 string[] RoomIP = new string[4];//各部屋のIPアドレス
                 var roomedata = new List<NetworkStream>(1);//サーバールーム用の箱
-                NetworkStream mas = null;//管理者保存
+              //  NetworkStream mas = null;//管理者保存
 
                 int port = 2002;//初期接続ポート番号TCP用
                 int roomport = 2003;//サーバールーム接続用
@@ -63,7 +62,7 @@ namespace resing_masterSaver
                                                           ((IPEndPoint)roomsetensr.LocalEndpoint).Port);//IPアドレス　ポート番号
 
 
-                Task.Run(() => heya(0, roomedata[0]));//クライアント受け入れ非同期
+                Task.Run(() => heya(0,roomedata[0]));//クライアント受け入れ非同期
                 Console.WriteLine("Room1　起動");
                 //Task.Run(() => heya(Room_2,1,RoomSystem[1]));//クライアント受け入れ非同期
                 //Console.WriteLine("Room2　起動");
@@ -261,18 +260,24 @@ namespace resing_masterSaver
                 {
 
                     string roomdata = zyusin(room);//ゲームサーバーからのデータ受信
-                                                   //0:サーバー切断 　1:接続待機　２：メンバー決定  3:ステージが決定した  　4:全員がゲームを開始する準備完了した 　5:ゲーム中
-                   // Console.WriteLine(roomdata);
-                    switch (roomdata)
+                  //受信  //部屋の状態,部屋にいる人数
+
+                    string[] data = roomdata.Split('_');
+                    Console.WriteLine(data[1].Length);
+                    switch (data[0])//0:待機 　1:ゲーム開始　２：ゲーム終了
                     {
-                        case "1":
+                        case "0"://待機
                             room_Nyusitu[No] = false;
                             break;
-
-                        case "2":
+                        case "1"://ゲーム開始
                             room_Nyusitu[No] = true;
                             break;
+
+                        case "2"://ゲーム終了
+                            break;
                     }
+
+                    Room_Ninzuu[No] = int.Parse(data[1]);//部屋人数
                 }
             }
 

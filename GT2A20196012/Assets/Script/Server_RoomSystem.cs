@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Expansion;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Net.Sockets;
@@ -62,7 +63,7 @@ public class Server_RoomSystem : MonoBehaviour
                     tuusin.UDPIN(ipAdd,portNo+1);//UDPデータ代入
                     Debug.Log("UDP受信待機　ip　" +ipAdd);
                     Debug.Log("UDP受信待機port　" +portNo+1);
-                    //Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
+                    Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
                     Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
                     lisetensr = new TcpListener(ipAdd, portNo);// クライアント受け入れ用
                     lisetensr.Start();
@@ -231,10 +232,10 @@ public class Server_RoomSystem : MonoBehaviour
     {
         while (!erro)
         {
-            string sousindata = string.Format("{0},{}");
 
-            tuusin.TCPsosin(string.Format("{0}", zyoutai));//部屋の状態送信
-                                                           //0:通常待機　1：ゲーム開始 2:ゲーム中　3:ゲーム終了
+            tuusin.TCPsosin(string.Format("{0}_{1}", zyoutai,client.Count));//部屋の状態送信
+           //送信 //部屋状態,部屋にいる人数
+            //0:待機　1：ゲーム開始 2:ゲーム終了
         }
     }
 
@@ -263,7 +264,7 @@ public class Server_RoomSystem : MonoBehaviour
     //            }
     //            catch
     //            {
-    //               Debug.Log("受信エラー");
+    //                Debug.Log("受信エラー");
     //                continue;
     //            }
 
@@ -294,21 +295,12 @@ public class Server_RoomSystem : MonoBehaviour
     //            sousindata += data + "/";
     //        }
 
-    //        sosin(room, sousindata);//ゲームサーバーに送信
-    //        string roomdata = zyusin(room);//ゲームサーバーからのデータ受信
-    //        switch (roomdata)
-    //        {
-    //            case "1":
-    //                room_zyoutai = 5;
-    //                break;
-    //        }
-
     //        if (!stageSelect)//ステージを決定する
     //        {
     //            if (Starg_No.Count == l.Count & l.Count != 0)//データがそろったら
     //            {
     //                stageSelect = true;
-    //                selct_stage_No = Starg_No[Random.Range(0,l.Count)];//ランダムでステージ番号を選択
+    //                selct_stage_No = Starg_No[Random.Range(0, l.Count)];//ランダムでステージ番号を選択
     //                Debug.Log("ステージデータ揃った :" + selct_stage_No);
     //                room_zyoutai = 3;
     //            }
@@ -323,7 +315,7 @@ public class Server_RoomSystem : MonoBehaviour
     //            if (zyunbiOK.Count == l.Count & l.Count != 0)//データがそろったら
     //            {
     //                Start_zyunbOK = true;
-    //               Debug.Log("全員がゲーム開始準備完了");
+    //                Debug.Log("全員がゲーム開始準備完了");
     //                room_zyoutai = 4;
     //            }
     //            else
@@ -344,49 +336,105 @@ public class Server_RoomSystem : MonoBehaviour
 
     void client_tuusin()//通信システム
     {
-
+        string sousindata = "";//送信するデータ
+        string zyusindata = "";//受信したデータ
+        bool stageSelect = false, Start_zyunbOK = false;//ステージ選択中か　全員ゲーム準備完了か
+        List<int> Starg_No = new List<int>(8);//受信ステージ番号用
+        List<int> zyunbiOK = new List<int>(8);//ゲームの準備完了したか用
+        int selct_stage_No = 0;//一番多かったステージ番号
+        int room_zyoutai = 1;//部屋の状態
 
         while (!erro)
         {
+            for (int i = 0; i < client.Count; i++)//一人ひとりクライアントのデータを受信
+            {
+                string zyusindata1 = "";
+                try
+                {
+                    zyusindata1 = tuusin.TCPzyusin_sitei(client[i]);
+                    if (zyusindata1 == "") { Debug.Log("データなし"); continue; }
+                }
+                catch
+                {
+                    Debug.Log("受信エラー");
+                    continue;
+                }
 
-            string sousindata = "";//送信するデータ
-            string data = tuusin.TCPzyusi();
-            //受信したデータ　番号　システム状態　プレイヤーの名前　機体番号　ステージ選択番号　プレイヤーのIPアドレス
-            if (data == "11") continue;
-            string[] data2 = data.Split('/');
-            sousindata += data2[0] + "/";
+                if (!stageSelect)//ステージを決定する
+                {
+                    if (Starg_No.Count == client.Count & client.Count != 0)//データがそろったら
+                    {
+                        stageSelect = true;
+                        selct_stage_No = Starg_No[Randam_Unityban.Randam_Unity(0, client.Count)];//ランダムでステージ番号を選択
+                        Debug.Log("ステージデータ揃った :" + selct_stage_No);
+                        room_zyoutai = 3;
+                        haiti = true;
+                    }
+                    else
+                    {
+                        Starg_No.Clear();
+                    }
+                }
+
+                if (!Start_zyunbOK)//クライアント全員がステージ準備完了か
+                {
+                    if (zyunbiOK.Count == client.Count & client.Count != 0)//データがそろったら
+                    {
+                        Start_zyunbOK = true;
+                        Debug.Log("全員がゲーム開始準備完了");
+                        room_zyoutai = 4;
+                        GameStart = true;
+                    }
+                    else
+                    {
+                        zyunbiOK.Clear();
+                    }
+                }
+
+                zyusindata += zyusindata1;//ここで各クライアントのでを圧縮
+            }
+
+            sousindata = string.Format("{0}_{1}_{2}_{3}/", 0, room_zyoutai, client.Count, selct_stage_No);//部屋の状態　部屋にいる人数　  選択されたステージ番号
+
+            //受信したデータ//　番号　システム状態　プレイヤーの名前　機体番号　ステージ選択番号　プレイヤーのIPアドレス
+            string[] data2 = zyusindata.Split('/');
+            sousindata += zyusindata;
             for (int i = 0; i < data2.Length; i++)
             {
                 string[] data3 = data2[i].Split('_');
                 switch (data3[0])
                 {
-                    case "0":
-                        switch (data3[1])
-                        {
-                            case "2"://メンバー決定
-                                Ninzuu = int.Parse(data3[2]);
-                                taiki = false;
-                                break;
+                    //case "0"://マスターサーバからのデータ
+                    //    switch (data3[1])
+                    //    {
+                    //        case "2"://メンバー決定
+                    //            Ninzuu = int.Parse(data3[2]);
+                    //            taiki = false;
+                    //            break;
 
-                            case "3"://ステージ決定
-                                StargNo = int.Parse(data3[3]);
-                                haiti = true;
-                                break;
+                    //        case "3"://ステージ決定
+                    //            StargNo = int.Parse(data3[3]);
+                    //            haiti = true;
+                    //            break;
 
-                            case "4"://全員準備完了
-                                if (!GameStart)
-                                {
-                                    zyoutai = 1;
-                                    GameStart = true;
-                                    Debug.Log("準備OK");
-                                }
-                                break;
-                        }
-                        break;
+                    //        case "4"://全員準備完了
+                    //            if (!GameStart)
+                    //            {
+                    //                zyoutai = 1;
+                    //                GameStart = true;
+                    //                Debug.Log("準備OK");
+                    //            }
+                    //            break;
+                    //    }
+                    //    break;
 
                     case "1":
                         if (taiki)
                         {
+                            if (data3[2] == "2")
+                            {
+                                taiki = false;
+                            }
                             kitai_No[0] = int.Parse(data3[3]);//使用機体受信 
                             tuusin.IPdata[0]= data3[5];//クライアントのIPアドレス取得
                         }   
@@ -448,6 +496,11 @@ public class Server_RoomSystem : MonoBehaviour
                         }
                         break;
                 }
+            }
+
+            for(int i=0;i<client.Count ; i++)//各クライアントに送信
+            {
+                tuusin.TCPsosin_sitei(client[i], sousindata);
             }
         }
     }
