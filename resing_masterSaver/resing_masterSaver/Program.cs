@@ -53,7 +53,7 @@ namespace resing_masterSaver
 
                 Task t = Task.Run(() => heyaIN(roomsetensr, roomedata, roompots, RoomIP));
                 t.Wait();//タスク終了まで待機
-                Task.Run(() => run(lisetensr, Room_Ninzuu[0], Room_Ninzuu[1], Room_Ninzuu[2], Room_Ninzuu[3], RoomIP));//クライアント受け入れ非同期
+                Task.Run(() => run(lisetensr, RoomIP));//クライアント受け入れ非同期
 
                 Console.WriteLine("TCPサーバー起動 IP {0}  port {1}", ((IPEndPoint)lisetensr.LocalEndpoint).Address,
                                                           ((IPEndPoint)lisetensr.LocalEndpoint).Port);//IPアドレス　ポート番号
@@ -84,7 +84,7 @@ namespace resing_masterSaver
                 Console.ReadLine();
             }
 
-            static void run(TcpListener tcl, int l1, int l2, int l3, int l4, string[] IP)//非同期処理クライアント接続待機
+            static void run(TcpListener tcl, string[] IP)//非同期処理クライアント接続待機
             {
                 while (!End)
                 {
@@ -94,26 +94,26 @@ namespace resing_masterSaver
                         NetworkStream ns = tcp.GetStream();
                         Console.WriteLine("クライアントが接続");
                         string data = string.Format("{0}_{1}/{2}_{3}/{4}_{5}/{6}_{7}",
-                                                   l1, room_Nyusitu[0], l2, room_Nyusitu[1], l3, room_Nyusitu[2], l4, room_Nyusitu[3]);//送信データ作成
+                                                   Room_Ninzuu[0], room_Nyusitu[0], Room_Ninzuu[1], room_Nyusitu[1], Room_Ninzuu[2], room_Nyusitu[2], Room_Ninzuu[3], room_Nyusitu[3]);//送信データ作成
 
                         sosin(ns, data);//接続してきたクライアントに部屋の人数を送信
                         string zyusindata = zyusin(ns);//選んだ部屋のデータ取得
                         switch (zyusindata)
                         {
                             case "0":
-                                Ninzuhantei(l1, ns, zyusindata, IP[0]);
+                                Ninzuhantei(Room_Ninzuu[0], ns, zyusindata, IP[0]);
                                 break;
 
                             case "1":
-                                Ninzuhantei(l2, ns, zyusindata, IP[1]);
+                                Ninzuhantei(Room_Ninzuu[1], ns, zyusindata, IP[1]);
                                 break;
 
                             case "2":
-                                Ninzuhantei(l3, ns, zyusindata, IP[2]);
+                                Ninzuhantei(Room_Ninzuu[2], ns, zyusindata, IP[2]);
                                 break;
 
                             case "3":
-                                Ninzuhantei(l4, ns, zyusindata, IP[3]);
+                                Ninzuhantei(Room_Ninzuu[3], ns, zyusindata, IP[3]);
                                 break;
 
                             default:
@@ -151,119 +151,15 @@ namespace resing_masterSaver
                 }
             }
 
-            //static void heya(List<NetworkStream>l,int No, NetworkStream room)//部屋の処理  リスト 部屋番号  サーバルーム
-            //{
-            //    string sousindata = "";//送信するデータ
-            //    bool stageSelect = false, Start_zyunbOK = false;//ステージ選択中か　全員ゲーム準備完了か
-            //    List<int> Starg_No=new List<int>(8);//受信ステージ番号用
-            //    List<int> zyunbiOK = new List<int>(8);//ゲームの準備完了したか用
-            //    int selct_stage_No = 0;//一番多かったステージ番号
-            //    int room_zyoutai = 1;//部屋の状態
-            //    //0:サーバー切断 　1:接続待機　２：メンバー決定  3:ステージが決定した  　4:全員がゲームを開始する準備完了した 　5:ゲーム中
-            //    while (!End)
-            //    {                
-            //        sousindata = string.Format("{0}_{1}_{2}_{3}/",0,room_zyoutai, l.Count,selct_stage_No);//部屋の状態　部屋にいる人数　  選択されたステージ番号
-
-            //        for (int i = 0; i < l.Count; i++)//一人ひとりクライアントのデータを受信
-            //        {
-            //            string data="";
-            //            try
-            //            {
-            //                 data = zyusin(l[i]);
-            //                if (data == "") { Console.WriteLine("データなし"); continue; }
-            //            }
-            //            catch
-            //            {
-            //                Console.WriteLine("受信エラー");
-            //                continue;
-            //            }
-
-            //            string[] data2 = data.Split('_');
-
-            //            if (!room_Gametyuu[No] & data2[0] == "1" & data2[1] == "2"||!room_Gametyuu[No]&l.Count==l.Capacity)//メンバーが決定したことをマスターのデータで取得  又は最大人数がそろったら
-            //            {
-            //                room_zyoutai = 2;
-            //                room_Gametyuu[No] = true;
-            //            }
-
-            //            switch (data2[1])
-            //            {
-            //                case "0"://クライアントが切断
-            //                    l.Remove(l[i]);
-            //                    break;
-
-            //                case "4"://ステージセレクト用
-            //                    Starg_No.Add(int.Parse(data2[4]));//受信ステージ番号取得
-            //                    break;
-
-            //                case "6"://ゲーム開始準備完了
-            //                    zyunbiOK.Add(0);//受信ステージ番号取得
-            //                    break;
-
-            //                default:
-            //                    break;
-            //            }
-            //            sousindata += data+"/";
-            //        }
-
-            //        sosin(room, sousindata);//ゲームサーバーに送信
-            //        string roomdata = zyusin(room);//ゲームサーバーからのデータ受信
-            //        switch (roomdata)
-            //        {
-            //            case "1":
-            //                room_zyoutai = 5;
-            //                break;
-            //        }
-
-            //        if (!stageSelect)//ステージを決定する
-            //        {             
-            //            if (Starg_No.Count == l.Count & l.Count != 0)//データがそろったら
-            //            {
-            //                stageSelect = true;
-            //                Random rand = new Random();
-            //                selct_stage_No = Starg_No[rand.Next(0, l.Count)];//ランダムでステージ番号を選択
-            //                Console.WriteLine("ステージデータ揃った :" + selct_stage_No);
-            //                room_zyoutai = 3;
-            //            }
-            //            else
-            //            {
-            //                Starg_No.Clear();
-            //            }
-            //        }
-
-            //        if (!Start_zyunbOK)//クライアント全員がステージ準備完了か
-            //        {
-            //            if (zyunbiOK.Count == l.Count & l.Count != 0)//データがそろったら
-            //            {
-            //                Start_zyunbOK = true;
-            //                Console.WriteLine("全員がゲーム開始準備完了");
-            //                room_zyoutai = 4;
-            //            }
-            //            else
-            //            {
-            //                zyunbiOK.Clear();
-            //            }
-            //        }
-
-
-            //        //192.168.10.3
-            //        for (int i=0;i<l.Count ; i++)//部屋にいるクライアント全員にデータを送信
-            //        {
-            //            Console.WriteLine(sousindata);
-            //           sosin(l[i], sousindata);
-            //        }
-            //    }
-            //}
             static void heya(int No, NetworkStream room)//部屋の処理  リスト 部屋番号  サーバルーム
             {
                 while (!End)
                 {
 
                     string roomdata = zyusin(room);//ゲームサーバーからのデータ受信
-                  //受信  //部屋の状態,部屋にいる人数
+                  //受信  //部屋の状態_部屋にいる人数
 
                     string[] data = roomdata.Split('_');
-                    Console.WriteLine(data[1].Length);
                     switch (data[0])//0:待機 　1:ゲーム開始　２：ゲーム終了
                     {
                         case "0"://待機
