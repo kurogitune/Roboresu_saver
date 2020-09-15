@@ -30,6 +30,8 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                 GameObject g = Instantiate(tama);
                 g.transform.position = utu.transform.position;
                 g.GetComponent<tama>().utu(utu.transform.forward*1000);
+                Debug.Log("生成");
+                Attack = 0;
                 break;
         }
 
@@ -49,7 +51,8 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     {
         iti = tp.Item1;
         Rote = tp.Item2;
-        Attack = tp.Item3;
+        if (Attack==0)
+            Attack = tp.Item3;
         Des = tp.Item4;
     }
 

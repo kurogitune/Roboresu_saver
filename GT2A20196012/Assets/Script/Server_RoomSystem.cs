@@ -29,6 +29,7 @@ public class Server_RoomSystem : MonoBehaviour
     int StargNo,Ninzuu,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
 
     static public int portNo;//指定使用ポート番号
+    bool asousin;
     // Start is called before the first frame update
     void Start()
     {

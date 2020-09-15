@@ -11,6 +11,7 @@ namespace System.Expansion//自作拡張
         static Encoding ecn = Encoding.UTF8;//文字コード指定 
         static NetworkStream nst;//マスターサーバーデータ
         static UdpClient[] zyusinudp = new UdpClient[8];//ゲームサーバールームデータ
+        static UdpClient[] zyusinOKudp = new UdpClient[8];//受信したことを送信し返す用
         public static string[] IPdata = new string[8];//送信する相手のIPアドレスデータ保存用
 
         public static void nstIN(NetworkStream ns)//サーバーマスターを取得
@@ -27,6 +28,12 @@ namespace System.Expansion//自作拡張
 
         public static void UDPIN(IPAddress ip, int portNo)//UDPデータを代入 ipアドレス　使用ポート最初の番号
         {
+            for (int i = 0; i < zyusinudp.Length; i++)
+            {
+                int port = portNo + i;
+                zyusinudp[i] = new UdpClient(new IPEndPoint(ip, port));
+            }
+
             for (int i = 0; i < zyusinudp.Length; i++)
             {
                 int port = portNo + i;
