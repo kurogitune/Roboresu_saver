@@ -267,11 +267,11 @@ public class Server_RoomSystem : MonoBehaviour
                 }
                 if (!stageSelect)//ステージを決定する
                 {
-                    Debug.Log(Starg_No.Count);
                     if (Starg_No.Count == client.Count & client.Count != 0)//データがそろったら
                     {
                         stageSelect = true;
-                        selct_stage_No = Starg_No[Randam_Unityban.Randam_Unity(0, Starg_No.Count)];//ランダムでステージ番号を選択
+                       
+                        selct_stage_No = Starg_No[Randam_e.Randam_System(0, Starg_No.Count)];//ランダムでステージ番号を選択
                         Debug.Log("ステージデータ揃った :" + selct_stage_No);
                         room_zyoutai = 3;
                         haiti = true;
