@@ -244,7 +244,7 @@ public class Server_RoomSystem : MonoBehaviour
         string sousindata = "";//送信するデータ
         bool stageSelect = false, Start_zyunbOK = false;//ステージ選択中か　全員ゲーム準備完了か
         List<int> Starg_No = new List<int>(8);//受信ステージ番号用
-        List<int> zyunbiOK = new List<int>(8);//ゲームの準備完了したか用
+        List<bool> zyunbiOK = new List<bool>(8);//ゲームの準備完了したか用
         int selct_stage_No = 0;//一番多かったステージ番号
         int room_zyoutai = 0;//部屋の状態
 
@@ -267,10 +267,11 @@ public class Server_RoomSystem : MonoBehaviour
                 }
                 if (!stageSelect)//ステージを決定する
                 {
+                    Debug.Log(Starg_No.Count);
                     if (Starg_No.Count == client.Count & client.Count != 0)//データがそろったら
                     {
                         stageSelect = true;
-                        selct_stage_No = Starg_No[Randam_Unityban.Randam_Unity(0, client.Count)];//ランダムでステージ番号を選択
+                        selct_stage_No = Starg_No[Randam_Unityban.Randam_Unity(0, Starg_No.Count)];//ランダムでステージ番号を選択
                         Debug.Log("ステージデータ揃った :" + selct_stage_No);
                         room_zyoutai = 3;
                         haiti = true;
@@ -318,12 +319,12 @@ public class Server_RoomSystem : MonoBehaviour
                                 taiki = false;
                                 break;
 
-                            case "3"://ステージセレクトしたか
-                                Starg_No[0] = 1;
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));                                
                                 break;
 
-                            case "4"://ゲーム開始準備完了か
-                                Starg_No[0] = 1;
+                            case "6"://ゲーム開始準備完了か
+                                 zyunbiOK.Add(true);
                                 break;
                         }
 
@@ -336,6 +337,18 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "2":
+
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[1] = int.Parse(data3[3]);//使用機体受信   
@@ -344,6 +357,18 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "3":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Debug.Log(data3[1] + "  " + data3[4]);
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[2] = int.Parse(data3[3]);//使用機体受信   
@@ -352,6 +377,17 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "4":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[3] = int.Parse(data3[3]);//使用機体受信   
@@ -360,6 +396,17 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "5":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[4] = int.Parse(data3[3]);//使用機体受信   
@@ -368,6 +415,17 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "6":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[5] = int.Parse(data3[3]);//使用機体受信   
@@ -376,6 +434,17 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "7":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[6] = int.Parse(data3[3]);//使用機体受信   
@@ -384,6 +453,17 @@ public class Server_RoomSystem : MonoBehaviour
                         break;
 
                     case "8":
+                        switch (data3[1])
+                        {
+                            case "4"://ステージセレクトしたか
+                                Starg_No.Add(int.Parse(data3[4]));
+                                break;
+
+                            case "6"://ゲーム開始準備完了か
+                                zyunbiOK.Add(true);
+                                break;
+                        }
+
                         if (taiki)
                         {
                             kitai_No[7] = int.Parse(data3[3]);//使用機体受信   
