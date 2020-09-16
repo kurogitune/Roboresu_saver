@@ -16,20 +16,20 @@ public class Server_RoomSystem : MonoBehaviour
 { 
     public GameObject[] Player_model = new GameObject[4];//プレイヤーのモデル
     public GameObject[] starg = new GameObject[4];//使用するステージ
-    public GameObject[] syokiiti = new GameObject[8];
+    public GameObject Itemobj;//アイテムのオブジェクト
     public Text t;
 
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
-    TcpListener lisetensr;
+    TcpListener lisetensr;//クライアントTPC受け入れ用
+    List<itemSy> ItemList;//アイテムのスクリプト用
     bool erro = false,roomMax=false,taiki=true,GameStart=false,haiti=false,haitiOK=false;
     string sousindt;//送信するデータ用
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか
-    int StargNo,Ninzuu,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
+    int StargNo,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
 
     static public int portNo;//指定使用ポート番号
-    bool asousin;
     // Start is called before the first frame update
     void Start()
     {
@@ -87,6 +87,9 @@ public class Server_RoomSystem : MonoBehaviour
             tuusin.tuusinKill();
             erro = true;
         }
+
+
+
     }
     void tout()
     {
@@ -117,13 +120,34 @@ public class Server_RoomSystem : MonoBehaviour
                 if (kitai_No[j] != 0)
                 {
                     GameObject g = Instantiate(Player_model[kitai_No[j]-1]);
-                    g.transform.position = syokiiti[j].transform.position;
                     INsystem[j] = g.GetComponent<UgokiIN>();
                 }
 
             }
             Debug.Log("作成終了");
-
+            Debug.Log("ステージ作成開始");
+            Instantiate(starg[StargNo-1]);
+            try
+            {
+                List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
+                Debug.Log(rodobj.Count);
+                for (int i = 0; i < rodobj.Count; i++)
+                {
+                    Debug.Log(i);               
+                    GameObject setobj = Instantiate(Itemobj);
+                    setobj.transform.position = rodobj[i].transform.position;
+                    setobj.transform.parent = rodobj[i].transform.parent;
+                    ItemList.Add(setobj.GetComponent<itemSy>());
+                    rodobj[i].SetActive(false);
+                }
+                Debug.Log("アイテム数  "+ItemList.Count);
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+            }
+   
+            Debug.Log("作成終了");
             Task.Run(() => UDPtuusin(0));//受信待機 No1
             Task.Run(() => UDPtuusin(1));//受信待機 No2
             Task.Run(() => UDPtuusin(2));//受信待機 No3
@@ -141,18 +165,21 @@ public class Server_RoomSystem : MonoBehaviour
             try//ここで送信データ作成
             {
                 string data = "";//プレイヤーのデータを送信用に集約
+                data += String.Format("{0}_{1}",0,2)+"/";//サーバールームのデータ作成
+                 //送信データ//アイテム個数　各アイテムの状態
                 for (int i = 0; i < INsystem.Length; i++)
                 {
                     if (INsystem[i] != null)
                     {
                         int No = i + 1;
-                        data += string.Format("{0}_{1}", No, PlayerTr(INsystem[i].trOUT())) + "/";
+                        data += string.Format("{0}_{1}", No, PlayerTr(INsystem[i].trOUT()))+"/";
                     }
                 }
                 sousindt = data;
             }
-            catch
+            catch(Exception e)
             {
+                Debug.Log(e);
                 Debug.Log("変換エラー");
             }//ここまで
         }
@@ -222,8 +249,9 @@ public class Server_RoomSystem : MonoBehaviour
                 string data =sousindt;
                 tuusin.UDPsousin(data);
             }
-            catch
+            catch(Exception e)
             {
+                Debug.Log(e);
                 Debug.Log("送信エラー");
             }
         }
@@ -273,6 +301,7 @@ public class Server_RoomSystem : MonoBehaviour
                         stageSelect = true;
                        
                         selct_stage_No = Starg_No[Randam_e.Randam_System(0, Starg_No.Count)];//ランダムでステージ番号を選択
+                        StargNo = selct_stage_No;
                         Debug.Log("ステージデータ揃った :" + selct_stage_No);
                         room_zyoutai = 3;
                         haiti = true;
@@ -301,7 +330,8 @@ public class Server_RoomSystem : MonoBehaviour
                 zyusindata += zyusindata1+"/";//ここで各クライアントのでを圧縮
             }
 
-            sousindata = string.Format("{0}_{1}_{2}_{3}/", 0, room_zyoutai, client.Count, selct_stage_No);//部屋の状態　部屋にいる人数　  選択されたステージ番号
+            sousindata = string.Format("{0}_{1}_{2}_{3}_/", 0, room_zyoutai, client.Count, selct_stage_No);
+            //サーバーからの送信データ//部屋の状態_部屋にいる人数_選択されたステージ番号
             //受信したデータ//　番号　システム状態　プレイヤーの名前　機体番号　ステージ選択番号　プレイヤーのIPアドレス
             string[] data2 = zyusindata.Split('/');
             sousindata += zyusindata;

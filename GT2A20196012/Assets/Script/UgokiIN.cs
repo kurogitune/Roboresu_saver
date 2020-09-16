@@ -59,7 +59,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     public Tuple<Vector3,Quaternion,int,int,int,int> trOUT()//モデルの情報を出力
     {
         return Tuple.Create(sousiniti,sosusinRote,Attack, Des, hit,Gool);
-         // 座標x,y,z　回転z,y,z,w　攻撃 死んだか　当たった　ゴール　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
+         // 座標x,y,z　回転z,y,z,w　攻撃 死んだか　当たった　ゴール　アイテムをゲット　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -94,6 +94,11 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         {
             hit = 1;
             Invoke("Hitstyokika", 0.1f);
+        }
+
+        if (other.tag == "item")
+        {
+
         }
     }
 

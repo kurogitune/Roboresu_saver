@@ -34,11 +34,11 @@ namespace System.Expansion//自作拡張
                 zyusinudp[i] = new UdpClient(new IPEndPoint(ip, port));
             }
 
-            for (int i = 0; i < zyusinudp.Length; i++)
-            {
-                int port = portNo + i;
-                zyusinudp[i] = new UdpClient(new IPEndPoint(ip, port));
-            }
+            //for (int i = 0; i < zyusinudp.Length; i++)
+            //{
+            //    int port = portNo + i;
+            //    zyusinudp[i] = new UdpClient(new IPEndPoint(ip, port));
+            //}
         }
 
         public static void TCPsosin(string s)//データ送信処理
