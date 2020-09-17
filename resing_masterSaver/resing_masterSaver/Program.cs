@@ -19,7 +19,7 @@ namespace resing_masterSaver
         static int Maxninzuu = 8;//各部屋の最大人数
         static void Main(string[] args)
         {
-            room_Nyusitu[1] = room_Nyusitu[2] = room_Nyusitu[3] = true;
+           room_Nyusitu[1] = room_Nyusitu[2] = room_Nyusitu[3] = true;
             string[] RoomIP = new string[4];//各部屋のIPアドレス
             var roomedata = new List<NetworkStream>(1);//サーバールーム用の箱
                                                        //  NetworkStream mas = null;//管理者保存
@@ -61,11 +61,14 @@ namespace resing_masterSaver
 
             Task.Run(() => heya(0, roomedata[0]));//クライアント受け入れ非同期
             Console.WriteLine("Room1　起動");
-            //Task.Run(() => heya(Room_2,1,RoomSystem[1]));//クライアント受け入れ非同期
+
+            //Task.Run(() => heya(1, roomedata[1]));//クライアント受け入れ非同期
             //Console.WriteLine("Room2　起動");
-            //Task.Run(() => heya(Room_3,2,RoomSystem[2]));//クライアント受け入れ非同期
+
+            //Task.Run(() => heya(2, roomedata[2]));//クライアント受け入れ非同期
             //Console.WriteLine("Room3　起動");
-            //Task.Run(() => heya(Room_4,3,RoomSystem[3]));//クライアント受け入れ非同期
+
+            //Task.Run(() => heya(3, roomedata[3]));//クライアント受け入れ非同期
             //Console.WriteLine("Room4　起動");
             //Task.Run(() => mas_run(mastar, mas, client));//管理者受け入れ非同期
 

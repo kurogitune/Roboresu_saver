@@ -19,6 +19,8 @@ public class Server_RoomSystem : MonoBehaviour
     public GameObject Itemobj;//アイテムのオブジェクト
     public Text t;
 
+    public static  int Lap;//ステージを回る数
+    public static int Maxwall;//判定用の最大数
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
@@ -126,8 +128,9 @@ public class Server_RoomSystem : MonoBehaviour
             }
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
+            int[] Max_Lap = { 3, 3, 3, 3 };//マップの周回数
             Instantiate(starg[0]);
-       
+            Lap = Max_Lap[0];
             List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
                 for (int i = 0; i < rodobj.Count; i++)
                 {
@@ -140,10 +143,11 @@ public class Server_RoomSystem : MonoBehaviour
                 }
 
             List<GameObject> lacewalldata = objList.tag_All_obj("lacewall");//順番判定用の壁全て取得
+            Maxwall = lacewalldata.Count;
                 for (int i = 0; i < lacewalldata.Count; i++)
                 {
                     lacewalldata[i].AddComponent<lacewall>();
-                    lacewalldata[i].GetComponent<lacewall>().NoIN(i);
+                    lacewalldata[i].GetComponent<lacewall>().NoIN(i+1);
                 }  
    
             Debug.Log("作成終了");
@@ -173,6 +177,7 @@ public class Server_RoomSystem : MonoBehaviour
                     {
                         int No = i + 1;
                         sousindt += string.Format("{0}_{1}", No, Playerdata_conversion(INsystem[i].trOUT()))+"/";
+                        INsystem[i].Datareset();
                     }
                 }
             }
@@ -332,7 +337,7 @@ public class Server_RoomSystem : MonoBehaviour
             }
 
             sousindata = string.Format("{0}_{1}_{2}_{3}_/", 0, room_zyoutai, client.Count, selct_stage_No);
-            //サーバーからの送信データ//部屋の状態_部屋にいる人数_選択されたステージ番号
+            //サーバーからの送信データ作成//部屋の状態_部屋にいる人数_選択されたステージ番号
             //受信したデータ//　番号　システム状態　プレイヤーの名前　機体番号　ステージ選択番号　プレイヤーのIPアドレス
             string[] data2 = zyusindata.Split('/');
             sousindata += zyusindata;
@@ -348,6 +353,7 @@ public class Server_RoomSystem : MonoBehaviour
                             case "2"://部屋マスターが、メンバーを確定したら
                                 Debug.Log("メンバー決定");
                                 room_zyoutai = 2;
+                                zyoutai = 1;
                                 taiki = false;
                                 break;
 
@@ -530,16 +536,17 @@ public class Server_RoomSystem : MonoBehaviour
 
 
     //以下はデータ変換用
-    string Playerdata_conversion(Tuple<Vector3,Quaternion,int,int,int,int>tp)//モデルの情報を文字列に変換
+    string Playerdata_conversion(Tuple<Vector3,Quaternion,int,int,int,int,int>tp)//モデルの情報を文字列に変換
     {
-            return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}",
+            return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}",
                     tp.Item1.x, tp.Item1.y, tp.Item1.z,
                     tp.Item2.x, tp.Item2.y,tp.Item2.z,tp.Item2.w, 
                     tp.Item3,
                     tp.Item4,
                     tp.Item5,
-                    tp.Item6);
-                  //座標　x,y,z    回転x,y,z,w　 攻撃したか　  死んだか  当たった　ゴールした   
+                    tp.Item6,
+                    tp.Item7);
+                  //座標　x,y,z    回転x,y,z,w　 攻撃したか　  死んだか  当たった　ゴールした   アイテムをゲット
     }
 
     Tuple<Vector3,Quaternion,int,int> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる
@@ -555,8 +562,9 @@ public class Server_RoomSystem : MonoBehaviour
         string sousindata = "";
         for(int i=0;i<lis.Count ; i++)
         {
-            sousindata += string.Format("{0}",lis[i].zyoutaiOUT()) +"_";
+            sousindata += string.Format("{0}",lis[i].zyoutaiOUT()) +",";
         }
+        Debug.Log(sousindata);
         return sousindata;
     }
 }
