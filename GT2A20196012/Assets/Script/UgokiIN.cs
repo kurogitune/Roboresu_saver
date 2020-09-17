@@ -98,7 +98,8 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
 
         if (other.tag == "item")
         {
-
+            Debug.Log("アイテム取得");
+            other.gameObject.GetComponent<itemSy>().PlayerItemGET();
         }
     }
 

@@ -8,6 +8,7 @@ TagManager:
   - tama
   - sokusi
   - item
+  - lacewall
   layers:
   - Default
   - TransparentFX

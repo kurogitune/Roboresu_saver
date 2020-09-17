@@ -23,9 +23,9 @@ public class Server_RoomSystem : MonoBehaviour
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
     TcpListener lisetensr;//クライアントTPC受け入れ用
-    List<itemSy> ItemList;//アイテムのスクリプト用
+    List<itemSy> ItemList=new List<itemSy>();//アイテムのスクリプト用
     bool erro = false,roomMax=false,taiki=true,GameStart=false,haiti=false,haitiOK=false;
-    string sousindt;//送信するデータ用
+
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか
     int StargNo,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
 
@@ -126,11 +126,9 @@ public class Server_RoomSystem : MonoBehaviour
             }
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
-            Instantiate(starg[StargNo-1]);
-            try
-            {
-                List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
-                Debug.Log(rodobj.Count);
+            Instantiate(starg[0]);
+       
+            List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
                 for (int i = 0; i < rodobj.Count; i++)
                 {
                     Debug.Log(i);               
@@ -140,12 +138,13 @@ public class Server_RoomSystem : MonoBehaviour
                     ItemList.Add(setobj.GetComponent<itemSy>());
                     rodobj[i].SetActive(false);
                 }
-                Debug.Log("アイテム数  "+ItemList.Count);
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-            }
+
+            List<GameObject> lacewalldata = objList.tag_All_obj("lacewall");//順番判定用の壁全て取得
+                for (int i = 0; i < lacewalldata.Count; i++)
+                {
+                    lacewalldata[i].AddComponent<lacewall>();
+                    lacewalldata[i].GetComponent<lacewall>().NoIN(i);
+                }  
    
             Debug.Log("作成終了");
             Task.Run(() => UDPtuusin(0));//受信待機 No1
@@ -157,31 +156,42 @@ public class Server_RoomSystem : MonoBehaviour
             Task.Run(() => UDPtuusin(6));//受信待機 No7
             Task.Run(() => UDPtuusin(7));//受信待機 No8
 
-            Task.Run(() =>UDPsousoin());//各クライアントに送信開始
+          //  Task.Run(() =>UDPsousoin());//各クライアントに送信開始
         }
 
-        if (GameStart)
+        if (GameStart)//ここで送信データ作成し送信を行う処理
         {
-            try//ここで送信データ作成
-            {
-                string data = "";//プレイヤーのデータを送信用に集約
-                data += String.Format("{0}_{1}",0,2)+"/";//サーバールームのデータ作成
+            string sousindt = "";//プレイヤーのデータを送信用に集約
+
+            try
+            {   
+                sousindt += String.Format("{0}_{1}_{2}",0,ItemList.Count, Itemdata_conversion(ItemList))+"/";//サーバールームのデータ作成
                  //送信データ//アイテム個数　各アイテムの状態
                 for (int i = 0; i < INsystem.Length; i++)
                 {
                     if (INsystem[i] != null)
                     {
                         int No = i + 1;
-                        data += string.Format("{0}_{1}", No, PlayerTr(INsystem[i].trOUT()))+"/";
+                        sousindt += string.Format("{0}_{1}", No, Playerdata_conversion(INsystem[i].trOUT()))+"/";
                     }
                 }
-                sousindt = data;
             }
             catch(Exception e)
             {
                 Debug.Log(e);
                 Debug.Log("変換エラー");
-            }//ここまで
+            }
+
+            try//各クライアントにUDPで送信
+            {
+                tuusin.UDPsousin(sousindt);
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+                Debug.Log("送信エラー");
+            }
+            //ここまで
         }
     }
 
@@ -239,23 +249,14 @@ public class Server_RoomSystem : MonoBehaviour
 
         }
     }
-    void UDPsousoin()//UDPでのクライアントにサーバールームの状態を送信
-    {
-        while (!erro)
-        {
-            if (!GameStart) continue;
-            try
-            {
-                string data =sousindt;
-                tuusin.UDPsousin(data);
-            }
-            catch(Exception e)
-            {
-                Debug.Log(e);
-                Debug.Log("送信エラー");
-            }
-        }
-    }
+    //void UDPsousoin()//UDPでのクライアントにサーバールームの状態を送信
+    //{
+    //    while (!erro)
+    //    {
+    //        if (!GameStart) continue;
+
+    //    }
+    //}
 
     void master_savertusin()//マスターサーバーに部屋の状態を送信
     {
@@ -526,7 +527,10 @@ public class Server_RoomSystem : MonoBehaviour
         }
     }
 
-    string PlayerTr(Tuple<Vector3,Quaternion,int,int,int,int>tp)//モデルの情報を文字列に変換
+
+
+    //以下はデータ変換用
+    string Playerdata_conversion(Tuple<Vector3,Quaternion,int,int,int,int>tp)//モデルの情報を文字列に変換
     {
             return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}",
                     tp.Item1.x, tp.Item1.y, tp.Item1.z,
@@ -544,5 +548,15 @@ public class Server_RoomSystem : MonoBehaviour
         return Tuple.Create(new Vector3(float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])),
                             new Quaternion(float.Parse(data[3]), float.Parse(data[4]), float.Parse(data[5]), float.Parse(data[6])),int.Parse(data[7]),int.Parse(data[8]));
         //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  
+    }
+
+    string Itemdata_conversion(List<itemSy>lis)//アイテムの状態を文字列に変換
+    {
+        string sousindata = "";
+        for(int i=0;i<lis.Count ; i++)
+        {
+            sousindata += string.Format("{0}",lis[i].zyoutaiOUT()) +"_";
+        }
+        return sousindata;
     }
 }
