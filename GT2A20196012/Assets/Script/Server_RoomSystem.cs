@@ -21,6 +21,7 @@ public class Server_RoomSystem : MonoBehaviour
 
     public static  int Lap;//ステージを回る数
     public static int Maxwall;//判定用の最大数
+
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
@@ -30,12 +31,12 @@ public class Server_RoomSystem : MonoBehaviour
 
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか
     int StargNo,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
-
     static public int portNo;//指定使用ポート番号
+
+    public static List<bool> Gool = new List<bool>();//クライアントがゴールしたのか
     // Start is called before the first frame update
     void Start()
     {
-
         string strHostName = Dns.GetHostName();//PCのホストネームを取得
                                                // マシンのIPアドレスを取得する 
         string strIPAddress = string.Empty;//使用するIPアドレス
@@ -163,40 +164,9 @@ public class Server_RoomSystem : MonoBehaviour
           //  Task.Run(() =>UDPsousoin());//各クライアントに送信開始
         }
 
-        if (GameStart)//ここで送信データ作成し送信を行う処理
+        if (GameStart)
         {
-            string sousindt = "";//プレイヤーのデータを送信用に集約
-
-            try
-            {   
-                sousindt += String.Format("{0}_{1}_{2}",0,ItemList.Count, Itemdata_conversion(ItemList))+"/";//サーバールームのデータ作成
-                 //送信データ//アイテム個数　各アイテムの状態
-                for (int i = 0; i < INsystem.Length; i++)
-                {
-                    if (INsystem[i] != null)
-                    {
-                        int No = i + 1;
-                        sousindt += string.Format("{0}_{1}", No, Playerdata_conversion(INsystem[i].trOUT()))+"/";
-                        INsystem[i].Datareset();
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                Debug.Log(e);
-                Debug.Log("変換エラー");
-            }
-
-            try//各クライアントにUDPで送信
-            {
-                tuusin.UDPsousin(sousindt);
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-                Debug.Log("送信エラー");
-            }
-            //ここまで
+            UDPsousoin();
         }
     }
 
@@ -254,14 +224,42 @@ public class Server_RoomSystem : MonoBehaviour
 
         }
     }
-    //void UDPsousoin()//UDPでのクライアントにサーバールームの状態を送信
-    //{
-    //    while (!erro)
-    //    {
-    //        if (!GameStart) continue;
 
-    //    }
-    //}
+    void UDPsousoin()//クライアントにサーバールームの状態を送信
+    {
+        string sousindt = "";//プレイヤーのデータを送信用に集約
+
+        try//ここで送信データ作成し送信を行う処理
+        {
+            sousindt += String.Format("{0}_{1}_{2}", 0, ItemList.Count, Itemdata_conversion(ItemList)) + "/";//サーバールームのデータ作成
+                         //送信データ//アイテム個数　各アイテムの状態
+            for (int i = 0; i < INsystem.Length; i++)
+            {
+                if (INsystem[i] != null)
+                {
+                    int No = i + 1;
+                    sousindt += string.Format("{0}_{1}", No, Playerdata_conversion(INsystem[i].trOUT())) + "/";
+                    INsystem[i].Datareset();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+            Debug.Log("変換エラー");
+        }
+
+        try//各クライアントにUDPで送信
+        {
+            tuusin.UDPsousin(sousindt);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+            Debug.Log("送信エラー");
+        }
+        //ここまで
+    }
 
     void master_savertusin()//マスターサーバーに部屋の状態を送信
     {
@@ -277,12 +275,12 @@ public class Server_RoomSystem : MonoBehaviour
     void client_tuusin()//通信システム
     {
         string sousindata = "";//送信するデータ
-        bool stageSelect = false, Start_zyunbOK = false;//ステージ選択中か　全員ゲーム準備完了か
+        bool stageSelect = false, Start_zyunbOK = false,GameEnd=false;//ステージ選択中か　全員ゲーム準備完了か ゲーム終了したか
         List<int> Starg_No = new List<int>(8);//受信ステージ番号用
         List<bool> zyunbiOK = new List<bool>(8);//ゲームの準備完了したか用
         int selct_stage_No = 0;//一番多かったステージ番号
         int room_zyoutai = 0;//部屋の状態
-
+        //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール)
         while (!erro)
         {
             string zyusindata = "";
@@ -300,41 +298,55 @@ public class Server_RoomSystem : MonoBehaviour
                     Debug.Log("受信エラー");
                     continue;
                 }
-                if (!stageSelect)//ステージを決定する
-                {
-                    if (Starg_No.Count == client.Count & client.Count != 0)//データがそろったら
-                    {
-                        stageSelect = true;
-                       
-                        selct_stage_No = Starg_No[Randam_e.Randam_System(0, Starg_No.Count)];//ランダムでステージ番号を選択
-                        StargNo = selct_stage_No;
-                        Debug.Log("ステージデータ揃った :" + selct_stage_No);
-                        room_zyoutai = 3;
-                        haiti = true;
-                    }
-                    else
-                    {
-                        Starg_No.Clear();
-                    }
-                }
-
-                if (!Start_zyunbOK)//クライアント全員がステージ準備完了か
-                {
-                    if (zyunbiOK.Count == client.Count & client.Count != 0)//データがそろったら
-                    {
-                        Start_zyunbOK = true;
-                        Debug.Log("全員がゲーム開始準備完了");
-                        room_zyoutai = 4;
-                        GameStart = true;
-                    }
-                    else
-                    {
-                        zyunbiOK.Clear();
-                    }
-                }
-
                 zyusindata += zyusindata1+"/";//ここで各クライアントのでを圧縮
             }
+
+            if (!stageSelect)//ステージを決定する
+            {
+                if (Starg_No.Count == client.Count & client.Count != 0)//データがそろったら
+                {
+                    stageSelect = true;
+
+                    selct_stage_No = Starg_No[Randam_e.Randam_System(0, Starg_No.Count)];//ランダムでステージ番号を選択
+                    StargNo = selct_stage_No;
+                    Debug.Log("ステージデータ揃った :" + selct_stage_No);
+                    room_zyoutai = 3;
+                    haiti = true;
+                }
+                else
+                {
+                    Starg_No.Clear();
+                }
+            }
+
+            if (!Start_zyunbOK)//クライアント全員がステージ準備完了か
+            {
+                if (zyunbiOK.Count == client.Count & client.Count != 0)//データがそろったら
+                {
+                    Start_zyunbOK = true;
+                    Debug.Log("全員がゲーム開始準備完了");
+                    room_zyoutai = 4;
+                    GameStart = true;
+                }
+                else
+                {
+                    zyunbiOK.Clear();
+                }
+            }
+
+            //try
+            //{
+            //    if (!GameEnd&Start_zyunbOK)//順位確定
+            //    {
+            //        if (Gool.Count == client.Count - 1)//最下位以外ゴールしたか
+            //        {
+            //            GameEnd = true;
+            //            Debug.Log("順位確定");
+            //            room_zyoutai = 5;
+            //        }
+            //    }
+            //}
+            //catch { }
 
             sousindata = string.Format("{0}_{1}_{2}_{3}_/", 0, room_zyoutai, client.Count, selct_stage_No);
             //サーバーからの送信データ作成//部屋の状態_部屋にいる人数_選択されたステージ番号
@@ -546,7 +558,7 @@ public class Server_RoomSystem : MonoBehaviour
                     tp.Item5,
                     tp.Item6,
                     tp.Item7);
-                  //座標　x,y,z    回転x,y,z,w　 攻撃したか　  死んだか  当たった　ゴールした   アイテムをゲット
+                  //座標　x,y,z    回転x,y,z,w　 攻撃したか　  死んだか  当たった　ゴールした   アイテムをゲット 周回数
     }
 
     Tuple<Vector3,Quaternion,int,int> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる

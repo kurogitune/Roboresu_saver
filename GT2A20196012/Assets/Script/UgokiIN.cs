@@ -11,6 +11,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     int Attack,hit,Gool,Des,Itemget,Rank;//攻撃　攻撃が自分に当たったか ゴールしたか 死んだか アイテムをゲットしたか 自分の順位
 
     int Lap,MaxLap,count, Maxcount;//現在のLap数 Lapの最大値数　現在の壁判定用　最大の壁判定番号
+    bool PlayerGool;
     // Start is called before the first frame update
     void Start()
     {
@@ -96,11 +97,13 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
             other.gameObject.GetComponent<itemSy>().PlayerItemGET();
         }
 
-        if (other.tag == "lacewall")//判定用壁に当たったら
+        if (other.tag == "lacewall"&!PlayerGool)//判定用壁に当たったら
         {
             if (Lap>=MaxLap& count >= Maxcount & other.gameObject.GetComponent<lacewall>().NoOUT() == 1)
             {
                 Gool = 1;
+                PlayerGool = true;
+                Server_RoomSystem.Gool.Add(true);
                 Debug.Log(gameObject.name + "ゴール");
             }
             else if (count>=Maxcount& other.gameObject.GetComponent<lacewall>().NoOUT() == 1)//最大数の壁に当たった後に最初の壁に当たったら
