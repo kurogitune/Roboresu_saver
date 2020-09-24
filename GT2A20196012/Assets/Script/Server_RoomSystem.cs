@@ -22,6 +22,8 @@ public class Server_RoomSystem : MonoBehaviour
     public static  int Lap;//ステージを回る数
     public static int Maxwall;//判定用の最大数
 
+    GameObject Starg;
+    GameObject[] PlayerModel = new GameObject[8];
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
@@ -30,7 +32,7 @@ public class Server_RoomSystem : MonoBehaviour
     bool Tuusin = true, roomMax = false, taiki = true, GameStart = false, haiti = false, haitiOK = false, UDP_Move = false;
 
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか UDP通信システム用
-    int StargNo,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
+    int StargNo,Room_ninzuu, zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
     static public int portNo;//指定使用ポート番号
 
     public static List<bool> Gool = new List<bool>();//クライアントがゴールしたのか
@@ -123,6 +125,8 @@ public class Server_RoomSystem : MonoBehaviour
                 if (kitai_No[j] != 0)
                 {
                     GameObject g = Instantiate(Player_model[kitai_No[j]-1]);
+                    g.name = j.ToString();
+                    Player_model[j] = g;
                     INsystem[j] = g.GetComponent<UgokiIN>();
                 }
 
@@ -130,12 +134,11 @@ public class Server_RoomSystem : MonoBehaviour
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
             int[] Max_Lap = { 3, 3, 3, 3 };//マップの周回数
-            Instantiate(starg[0]);
+            Starg= Instantiate(starg[0]);
             Lap = Max_Lap[0];
             List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
                 for (int i = 0; i < rodobj.Count; i++)
                 {
-                    Debug.Log(i);               
                     GameObject setobj = Instantiate(Itemobj);
                     setobj.transform.position = rodobj[i].transform.position;
                     setobj.transform.parent = rodobj[i].transform.parent;
@@ -168,6 +171,27 @@ public class Server_RoomSystem : MonoBehaviour
         if (GameStart)
         {
             UDPsousoin();
+            try
+            {
+                int[] Master_RankData = new int[Room_ninzuu];
+                for (int i = 0; i < Room_ninzuu; i++)//順位判定用
+                {
+                    Master_RankData[i] = INsystem[i].hanteiCountOUT();
+                }
+                Array.Sort(Master_RankData);//昇順に並べ替え
+                Array.Reverse(Master_RankData);//場所を反転
+                for (int i = 0; i < Room_ninzuu; i++)
+                {
+                    for (int j = 0; j < Master_RankData.Length; j++)
+                    {
+                        if (INsystem[i].hanteiCountOUT() == Master_RankData[j])
+                        {
+                            INsystem[i].RankIN(j + 1);
+                        }
+                    }
+                }
+            }
+            catch { Debug.Log("順位並び替えエラー"); }
         }
     }
 
@@ -282,7 +306,7 @@ public class Server_RoomSystem : MonoBehaviour
         List<bool> ScoreSyoriEnd = new List<bool>(8);//スコア表示処理が終了したか用
         int selct_stage_No = 0;//一番多かったステージ番号
         int room_zyoutai = 0;//部屋の状態
-        //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール) 　7:プレイヤー切断処理開始
+        //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール) 　6:プレイヤー切断処理開始
         while (Tuusin)
         {
             string zyusindata = "";
@@ -336,27 +360,6 @@ public class Server_RoomSystem : MonoBehaviour
                 }
             }
 
-            if (!Score_End)//クライアントスコア処理完了か
-            {
-                if (ScoreSyoriEnd.Count == client.Count & client.Count != 0)//データがそろったら
-                {
-                    Score_End = true;
-                    Debug.Log("全員がスコア処理終了のため切断");
-                    room_zyoutai = 7;
-                   // UDP_Move = false;
-                    //zyoutai = 0;
-                    //client.Clear();
-                    //ScoreSyoriEnd.Clear();
-                    //zyunbiOK.Clear();
-                    //Starg_No.Clear();
-                    //continue;
-                }
-                else
-                {
-                    ScoreSyoriEnd.Clear();
-                }
-            }
-
             try
             {
                 if (!GameEnd & Start_zyunbOK)//順位確定
@@ -370,6 +373,52 @@ public class Server_RoomSystem : MonoBehaviour
                 }
             }
             catch { }
+
+            if (!Score_End)//クライアントスコア処理完了か
+            {
+                if (ScoreSyoriEnd.Count == client.Count & client.Count != 0)//データがそろったら
+                {
+                    Score_End = true;
+                    Debug.Log("全員がスコア処理終了のため切断");
+                    room_zyoutai = 6;
+                    sousindata = string.Format("{0}_{1}/", 0, room_zyoutai);
+                    for (int i = 0; i < client.Count; i++)//各クライアントに送信
+                    {
+                        tuusin.TCPsosin_sitei(client[i], sousindata);
+                    }
+                    Destroy(Starg);
+                    for(int i=0;i<Player_model.Length ; i++)
+                    {if(Player_model[i]!=null) Destroy(Player_model[i]);
+                    }
+                    UDP_Move = false;
+                    stageSelect = false; 
+                    Start_zyunbOK = false;
+                    GameEnd = false;
+                    Score_End = false;
+                    taiki = true;
+                    GameStart = false;
+                    haiti = false;
+                    haitiOK = false;
+                    Lap = 0;
+                    Maxwall = 0;
+                    Room_ninzuu = 0; 
+                    zyoutai = 0;
+                    selct_stage_No = 0;
+                    room_zyoutai = 0;
+                    client.Clear();
+                    ScoreSyoriEnd.Clear();
+                    zyunbiOK.Clear();
+                    Starg_No.Clear();
+                    sousindata = "";
+                    continue;
+                }
+                else
+                {
+                    ScoreSyoriEnd.Clear();
+                }
+            }
+
+ 
 
             sousindata = string.Format("{0}_{1}_{2}_{3}_/", 0, room_zyoutai, client.Count, selct_stage_No);
             //サーバーからの送信データ作成//部屋の状態_部屋にいる人数_選択されたステージ番号
@@ -388,6 +437,7 @@ public class Server_RoomSystem : MonoBehaviour
                             case "2"://部屋マスターが、メンバーを確定したら
                                 Debug.Log("メンバー決定");
                                 room_zyoutai = 2;
+                                Room_ninzuu = client.Count;
                                 zyoutai = 1;
                                 taiki = false;
                                 break;
@@ -400,6 +450,7 @@ public class Server_RoomSystem : MonoBehaviour
                                  zyunbiOK.Add(true);
                                 break;
                             case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
                                 break;
                         }
 
@@ -422,6 +473,9 @@ public class Server_RoomSystem : MonoBehaviour
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
                                 break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
+                                break;
                         }
 
                         if (taiki)
@@ -442,6 +496,9 @@ public class Server_RoomSystem : MonoBehaviour
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
                                 break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
+                                break;
                         }
 
                         if (taiki)
@@ -460,6 +517,9 @@ public class Server_RoomSystem : MonoBehaviour
 
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
+                                break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
                                 break;
                         }
 
@@ -480,6 +540,9 @@ public class Server_RoomSystem : MonoBehaviour
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
                                 break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
+                                break;
                         }
 
                         if (taiki)
@@ -498,6 +561,9 @@ public class Server_RoomSystem : MonoBehaviour
 
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
+                                break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
                                 break;
                         }
 
@@ -518,6 +584,9 @@ public class Server_RoomSystem : MonoBehaviour
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
                                 break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
+                                break;
                         }
 
                         if (taiki)
@@ -536,6 +605,9 @@ public class Server_RoomSystem : MonoBehaviour
 
                             case "6"://ゲーム開始準備完了か
                                 zyunbiOK.Add(true);
+                                break;
+                            case "8"://スコア処理終了
+                                ScoreSyoriEnd.Add(true);
                                 break;
                         }
 

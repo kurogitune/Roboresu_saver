@@ -10,7 +10,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     GameObject utu, tama;
     int Attack,hit,Gool,Des,Itemget,Rank;//攻撃　攻撃が自分に当たったか ゴールしたか 死んだか アイテムをゲットしたか 自分の順位
 
-    int Lap,MaxLap,count, Maxcount;//現在のLap数 Lapの最大値数　現在の壁判定用　最大の壁判定番号
+    int Lap,MaxLap,count, Maxcount,hanteiCount;//現在のLap数 Lapの最大値数　現在の壁判定用　最大の壁判定番号 順位判定用
     bool PlayerGool;
     // Start is called before the first frame update
     void Start()
@@ -22,6 +22,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         utu = transform.Find("Cube").gameObject;
         count = 1;
         Lap = 1;
+        hanteiCount = 1;
     }
 
     // Update is called once per frame
@@ -112,12 +113,14 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
             else if (count>=Maxcount& other.gameObject.GetComponent<lacewall>().NoOUT() == 1)//最大数の壁に当たった後に最初の壁に当たったら
             {
                 Lap++;
+                hanteiCount++;
                 count=1;
                 Debug.Log("一周した");
             }
             else if (other.gameObject.GetComponent<lacewall>().NoOUT() == count + 1)//次の壁番号と同じだったら
             {
                 count++;
+                hanteiCount++;
                 Debug.Log("壁に当たった");
 
             }
@@ -132,6 +135,12 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     public void RankIN(int i)//順位を代入
     {
         Rank = i;
+        Debug.Log(gameObject.name+"  順位 "+i);
+    }
+
+    public int hanteiCountOUT()//順位判定用の値出力用
+    {
+        return hanteiCount;
     }
 
     public void Datareset()//データをクライアントに送信してからデータををリセット
