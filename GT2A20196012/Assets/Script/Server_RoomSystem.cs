@@ -23,7 +23,7 @@ public class Server_RoomSystem : MonoBehaviour
     public static int Maxwall;//判定用の最大数
 
     GameObject Starg;
-    GameObject[] PlayerModel = new GameObject[8];
+    GameObject[] PlayerModelData = new GameObject[8];
     int[] kitai_No=new int[8];//プレイヤー達が使用する機体番号
     UgokiIN[] INsystem =new UgokiIN[8];//各プレイヤーの動きのスクリプト
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
@@ -126,7 +126,7 @@ public class Server_RoomSystem : MonoBehaviour
                 {
                     GameObject g = Instantiate(Player_model[kitai_No[j]-1]);
                     g.name = j.ToString();
-                    Player_model[j] = g;
+                    PlayerModelData[j] = g;
                     INsystem[j] = g.GetComponent<UgokiIN>();
                 }
 
@@ -379,38 +379,43 @@ public class Server_RoomSystem : MonoBehaviour
                 if (ScoreSyoriEnd.Count == client.Count & client.Count != 0)//データがそろったら
                 {
                     Score_End = true;
-                    Debug.Log("全員がスコア処理終了のため切断");
-                    room_zyoutai = 6;
-                    sousindata = string.Format("{0}_{1}/", 0, room_zyoutai);
-                    for (int i = 0; i < client.Count; i++)//各クライアントに送信
+               
+                    try
                     {
-                        tuusin.TCPsosin_sitei(client[i], sousindata);
+                        Debug.Log("全員がスコア処理終了のため切断");
+                        room_zyoutai = 6;
+                        sousindata = string.Format("{0}_{1}/", 0, room_zyoutai);
+                        for (int i = 0; i < client.Count; i++)//各クライアントに送信
+                        {
+                            tuusin.TCPsosin_sitei(client[i], sousindata);
+                        }
+                        UDP_Move = false;
+                        stageSelect = false;
+                        Start_zyunbOK = false;
+                        GameEnd = false;
+                        Score_End = false;
+                        taiki = true;
+                        GameStart = false;
+                        haiti = false;
+                        haitiOK = false;
+                        Lap = 0;
+                        Maxwall = 0;
+                        Room_ninzuu = 0;
+                        zyoutai = 0;
+                        selct_stage_No = 0;
+                        room_zyoutai = 0;
+                        client.Clear();
+                        ScoreSyoriEnd.Clear();
+                        zyunbiOK.Clear();
+                        Starg_No.Clear();
+                        sousindata = "";
+                        continue;
                     }
+                    catch(Exception e) { Debug.Log(e); }
                     Destroy(Starg);
                     for(int i=0;i<Player_model.Length ; i++)
                     {if(Player_model[i]!=null) Destroy(Player_model[i]);
-                    }
-                    UDP_Move = false;
-                    stageSelect = false; 
-                    Start_zyunbOK = false;
-                    GameEnd = false;
-                    Score_End = false;
-                    taiki = true;
-                    GameStart = false;
-                    haiti = false;
-                    haitiOK = false;
-                    Lap = 0;
-                    Maxwall = 0;
-                    Room_ninzuu = 0; 
-                    zyoutai = 0;
-                    selct_stage_No = 0;
-                    room_zyoutai = 0;
-                    client.Clear();
-                    ScoreSyoriEnd.Clear();
-                    zyunbiOK.Clear();
-                    Starg_No.Clear();
-                    sousindata = "";
-                    continue;
+                    } 
                 }
                 else
                 {
