@@ -63,10 +63,13 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         Des = tp.Item4;
     }
 
-    public Tuple<Vector3,Quaternion,int,int,int,int,int> trOUT()//モデルの情報を出力
+    public string trOUT()//モデルの情報を文字列に変換
     {
-        return Tuple.Create(sousiniti,sosusinRote,Attack, Des, hit,Gool,Itemget);
-         // 座標x,y,z　回転z,y,z,w　攻撃 死んだか　当たった　ゴール　アイテムをゲット　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
+          return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13}",
+                                sousiniti.x,sousiniti.y,sousiniti.z,
+                                sosusinRote.x,sosusinRote.y,sosusinRote.z,sosusinRote.w,
+                                Attack,Des,hit,Gool,Itemget,Lap,Rank);
+        // 座標x,y,z　回転z,y,z,w　攻撃 死んだか　当たった　ゴール　アイテムをゲット　周回数　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -119,6 +122,16 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
 
             }
         }
+    }
+
+    public Tuple<int,int> RoteData()//周回数を出力
+    {
+        return Tuple.Create(Lap, count);
+    }
+
+    public void RankIN(int i)//順位を代入
+    {
+        Rank = i;
     }
 
     public void Datareset()//データをクライアントに送信してからデータををリセット

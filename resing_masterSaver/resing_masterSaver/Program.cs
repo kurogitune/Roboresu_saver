@@ -168,9 +168,6 @@ namespace resing_masterSaver
                     case "1"://ゲーム開始
                         room_Nyusitu[No] = true;
                         break;
-
-                    case "2"://ゲーム終了
-                        break;
                 }
 
                 Room_Ninzuu[No] = int.Parse(data[1]);//部屋人数

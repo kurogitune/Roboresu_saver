@@ -238,7 +238,7 @@ public class Server_RoomSystem : MonoBehaviour
                 if (INsystem[i] != null)
                 {
                     int No = i + 1;
-                    sousindt += string.Format("{0}_{1}", No, Playerdata_conversion(INsystem[i].trOUT())) + "/";
+                    sousindt += string.Format("{0}_{1}", No,INsystem[i].trOUT()) + "/";
                     INsystem[i].Datareset();
                 }
             }
@@ -275,12 +275,13 @@ public class Server_RoomSystem : MonoBehaviour
     void client_tuusin()//通信システム
     {
         string sousindata = "";//送信するデータ
-        bool stageSelect = false, Start_zyunbOK = false,GameEnd=false;//ステージ選択中か　全員ゲーム準備完了か ゲーム終了したか
+        bool stageSelect = false, Start_zyunbOK = false, GameEnd = false, Score_End = false;//ステージ選択中か　全員ゲーム準備完了か ゲーム終了したか スコア処理が終了したか
         List<int> Starg_No = new List<int>(8);//受信ステージ番号用
         List<bool> zyunbiOK = new List<bool>(8);//ゲームの準備完了したか用
+        List<bool> ScoreSyoriEnd = new List<bool>(8);//スコア表示処理が終了したか用
         int selct_stage_No = 0;//一番多かったステージ番号
         int room_zyoutai = 0;//部屋の状態
-        //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール)
+        //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール) 　7:プレイヤー切断処理開始
         while (!erro)
         {
             string zyusindata = "";
@@ -330,13 +331,33 @@ public class Server_RoomSystem : MonoBehaviour
                 }
                 else
                 {
-                    zyunbiOK.Clear();
+                   
+                }
+            }
+
+            if (!Score_End)//クライアントスコア処理完了か
+            {
+                if (ScoreSyoriEnd.Count == client.Count & client.Count != 0)//データがそろったら
+                {
+                    Score_End = true;
+                    Debug.Log("全員がスコア処理終了のため切断");
+                    room_zyoutai = 7;
+                    //zyoutai = 0;
+                    //client.Clear();
+                    //ScoreSyoriEnd.Clear();
+                    //zyunbiOK.Clear();
+                    //Starg_No.Clear();
+                    //continue;
+                }
+                else
+                {
+                    ScoreSyoriEnd.Clear();
                 }
             }
 
             //try
             //{
-            //    if (!GameEnd&Start_zyunbOK)//順位確定
+            //    if (!GameEnd & Start_zyunbOK)//順位確定
             //    {
             //        if (Gool.Count == client.Count - 1)//最下位以外ゴールしたか
             //        {
@@ -548,18 +569,6 @@ public class Server_RoomSystem : MonoBehaviour
 
 
     //以下はデータ変換用
-    string Playerdata_conversion(Tuple<Vector3,Quaternion,int,int,int,int,int>tp)//モデルの情報を文字列に変換
-    {
-            return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}",
-                    tp.Item1.x, tp.Item1.y, tp.Item1.z,
-                    tp.Item2.x, tp.Item2.y,tp.Item2.z,tp.Item2.w, 
-                    tp.Item3,
-                    tp.Item4,
-                    tp.Item5,
-                    tp.Item6,
-                    tp.Item7);
-                  //座標　x,y,z    回転x,y,z,w　 攻撃したか　  死んだか  当たった　ゴールした   アイテムをゲット 周回数
-    }
 
     Tuple<Vector3,Quaternion,int,int> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる
     {
