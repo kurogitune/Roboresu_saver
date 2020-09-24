@@ -27,9 +27,9 @@ public class Server_RoomSystem : MonoBehaviour
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
     TcpListener lisetensr;//クライアントTPC受け入れ用
     List<itemSy> ItemList=new List<itemSy>();//アイテムのスクリプト用
-    bool erro = false,roomMax=false,taiki=true,GameStart=false,haiti=false,haitiOK=false;
+    bool Tuusin = true, roomMax = false, taiki = true, GameStart = false, haiti = false, haitiOK = false, UDP_Move = false;
 
-    //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか
+    //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか UDP通信システム用
     int StargNo,zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
     static public int portNo;//指定使用ポート番号
 
@@ -88,7 +88,7 @@ public class Server_RoomSystem : MonoBehaviour
         {
             t.text = "接続エラー";
             tuusin.tuusinKill();
-            erro = true;
+            Tuusin = false;
         }
 
 
@@ -107,7 +107,7 @@ public class Server_RoomSystem : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
             return;
         }
-        else if (erro)//接続エラーの場合　再接続
+        else if (!Tuusin)//接続エラーの場合　再接続
         {
             if (Input.GetKeyDown(KeyCode.Escape)) SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             return;
@@ -152,6 +152,7 @@ public class Server_RoomSystem : MonoBehaviour
                 }  
    
             Debug.Log("作成終了");
+            UDP_Move = true;
             Task.Run(() => UDPtuusin(0));//受信待機 No1
             Task.Run(() => UDPtuusin(1));//受信待機 No2
             Task.Run(() => UDPtuusin(2));//受信待機 No3
@@ -173,7 +174,7 @@ public class Server_RoomSystem : MonoBehaviour
     void UDPtuusin(int i)//UDPでのクライアントデータ受信
     {
         int bangou = i;
-        while (!erro)
+        while (UDP_Move)
         {
             string s= tuusin.UDPzyusin(bangou);
 
@@ -263,7 +264,7 @@ public class Server_RoomSystem : MonoBehaviour
 
     void master_savertusin()//マスターサーバーに部屋の状態を送信
     {
-        while (!erro)
+        while (Tuusin)
         {
 
             tuusin.TCPsosin(string.Format("{0}_{1}_", zyoutai,client.Count));//部屋の状態送信
@@ -282,7 +283,7 @@ public class Server_RoomSystem : MonoBehaviour
         int selct_stage_No = 0;//一番多かったステージ番号
         int room_zyoutai = 0;//部屋の状態
         //1:接続待機 2:メンバー決定 3:ステージ決定 4:クライアント全員が準備完了 5:順位確定(最下位以外ゴール) 　7:プレイヤー切断処理開始
-        while (!erro)
+        while (Tuusin)
         {
             string zyusindata = "";
             Debug.Log("TCP受信待機");
@@ -331,7 +332,7 @@ public class Server_RoomSystem : MonoBehaviour
                 }
                 else
                 {
-                   
+                    zyunbiOK.Clear();
                 }
             }
 
@@ -342,6 +343,7 @@ public class Server_RoomSystem : MonoBehaviour
                     Score_End = true;
                     Debug.Log("全員がスコア処理終了のため切断");
                     room_zyoutai = 7;
+                   // UDP_Move = false;
                     //zyoutai = 0;
                     //client.Clear();
                     //ScoreSyoriEnd.Clear();
@@ -355,19 +357,19 @@ public class Server_RoomSystem : MonoBehaviour
                 }
             }
 
-            //try
-            //{
-            //    if (!GameEnd & Start_zyunbOK)//順位確定
-            //    {
-            //        if (Gool.Count == client.Count - 1)//最下位以外ゴールしたか
-            //        {
-            //            GameEnd = true;
-            //            Debug.Log("順位確定");
-            //            room_zyoutai = 5;
-            //        }
-            //    }
-            //}
-            //catch { }
+            try
+            {
+                if (!GameEnd & Start_zyunbOK)//順位確定
+                {
+                    if (Gool.Count == client.Count - 1)//最下位以外ゴールしたか
+                    {
+                        GameEnd = true;
+                        Debug.Log("順位確定");
+                        room_zyoutai = 5;
+                    }
+                }
+            }
+            catch { }
 
             sousindata = string.Format("{0}_{1}_{2}_{3}_/", 0, room_zyoutai, client.Count, selct_stage_No);
             //サーバーからの送信データ作成//部屋の状態_部屋にいる人数_選択されたステージ番号
@@ -396,6 +398,8 @@ public class Server_RoomSystem : MonoBehaviour
 
                             case "6"://ゲーム開始準備完了か
                                  zyunbiOK.Add(true);
+                                break;
+                            case "8"://スコア処理終了
                                 break;
                         }
 
@@ -554,7 +558,7 @@ public class Server_RoomSystem : MonoBehaviour
 
     void TCPclientIN()//TPCでのclient受け入れ非同期
     {
-        while (!erro)
+        while (Tuusin)
         {
             var tcp = lisetensr.AcceptTcpClient();//クライアントが接続しようとしたら 
             NetworkStream ns = tcp.GetStream();
