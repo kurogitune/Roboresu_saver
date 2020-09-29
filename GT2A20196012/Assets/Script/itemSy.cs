@@ -20,7 +20,6 @@ public class itemSy : MonoBehaviour
     {
         if (!status) return;
 
-        coll.enabled = false;
         ItemrisponTime -= Time.deltaTime;
 
         if (ItemrisponTime <= 0)
@@ -39,10 +38,5 @@ public class itemSy : MonoBehaviour
         status = true;
         coll.enabled = false;
         zyoutai = 2;
-    }
-
-    public int zyoutaiOUT()//アイテム状態出力用
-    {
-        return zyoutai;
     }
 }

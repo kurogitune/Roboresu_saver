@@ -29,7 +29,7 @@ public class Server_RoomSystem : MonoBehaviour
     List<NetworkStream> client = new List<NetworkStream>(8);//クライアントのデータTCP用
     TcpListener lisetensr;//クライアントTPC受け入れ用
     List<itemSy> ItemList=new List<itemSy>();//アイテムのスクリプト用
-    bool Tuusin = true, roomMax = false, taiki = true, GameStart = false, haiti = false, haitiOK = false, UDP_Move = false;
+    bool Tuusin = true, roomMax = false, taiki = true, GameStart = false, haiti = false, haitiOK = false, UDP_Move = false,Roomreset=false;
 
     //エラー　部屋数が最大  スタート待機　ゲームスタートか  オブジェクトの配置 配置終了したか UDP通信システム用
     int StargNo,Room_ninzuu, zyoutai=0;//ステージ番号 プレイヤー人数  部屋の状態
@@ -115,6 +115,36 @@ public class Server_RoomSystem : MonoBehaviour
             return;
         }
 
+        if (Roomreset)
+        {
+            Debug.Log("部屋をリセットします");
+            Lap = Maxwall = 0;
+            Destroy(Starg);
+            for(int i=0;i<PlayerModelData.Length ; i++)//モデル消去
+            {
+                if (PlayerModelData[i] != null)
+                {
+                    Destroy(PlayerModelData[i]);
+                    PlayerModelData[i] = null;
+                }
+            }
+            for(int i = 0; i < INsystem.Length; i++)//通信用スクリプト削除
+            {
+                INsystem[i] = null;
+            }
+            ItemList.Clear();//アイテムスクリプト削除
+            for (int i = 0; i < kitai_No.Length; i++)//機体番号削除
+            {
+                kitai_No[i] = 0;
+            }
+
+            t.text = "部屋リセット終了";
+            t.gameObject.SetActive(true);
+            Invoke("tout", 3);
+            Roomreset = false;
+            Debug.Log("部屋リセット終了");
+        }
+
         if (haiti&!haitiOK)//ステージステージ,機体作成
         {
             Debug.Log("model作成開始");
@@ -133,9 +163,9 @@ public class Server_RoomSystem : MonoBehaviour
             }
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
-            int[] Max_Lap = { 3, 3, 3, 3 };//マップの周回数
-            Starg= Instantiate(starg[0]);
-            Lap = Max_Lap[0];
+            int[] Max_Lap = { 5,5,2,1 };//マップの周回数
+            Starg= Instantiate(starg[StargNo-1]);
+            Lap = Max_Lap[StargNo - 1];
             List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
                 for (int i = 0; i < rodobj.Count; i++)
                 {
@@ -171,7 +201,7 @@ public class Server_RoomSystem : MonoBehaviour
         if (GameStart)
         {
             UDPsousoin();
-            try
+            try//ランキング処理
             {
                 int[] Master_RankData = new int[Room_ninzuu];
                 for (int i = 0; i < Room_ninzuu; i++)//順位判定用
@@ -256,7 +286,7 @@ public class Server_RoomSystem : MonoBehaviour
 
         try//ここで送信データ作成し送信を行う処理
         {
-            sousindt += String.Format("{0}_{1}_{2}", 0, ItemList.Count, Itemdata_conversion(ItemList)) + "/";//サーバールームのデータ作成
+            sousindt += String.Format("{0}_{1}", 0, ItemList.Count) + "/";//サーバールームのデータ作成
                          //送信データ//アイテム個数　各アイテムの状態
             for (int i = 0; i < INsystem.Length; i++)
             {
@@ -380,7 +410,7 @@ public class Server_RoomSystem : MonoBehaviour
                 {
                     Score_End = true;
                
-                    try
+                    try//部屋をリセットする
                     {
                         Debug.Log("全員がスコア処理終了のため切断");
                         room_zyoutai = 6;
@@ -409,6 +439,7 @@ public class Server_RoomSystem : MonoBehaviour
                         zyunbiOK.Clear();
                         Starg_No.Clear();
                         sousindata = "";
+                        Roomreset = true;
                         continue;
                     }
                     catch(Exception e) { Debug.Log(e); }
@@ -657,16 +688,5 @@ public class Server_RoomSystem : MonoBehaviour
         return Tuple.Create(new Vector3(float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])),
                             new Quaternion(float.Parse(data[3]), float.Parse(data[4]), float.Parse(data[5]), float.Parse(data[6])),int.Parse(data[7]),int.Parse(data[8]));
         //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  
-    }
-
-    string Itemdata_conversion(List<itemSy>lis)//アイテムの状態を文字列に変換
-    {
-        string sousindata = "";
-        for(int i=0;i<lis.Count ; i++)
-        {
-            sousindata += string.Format("{0}",lis[i].zyoutaiOUT()) +",";
-        }
-        Debug.Log(sousindata);
-        return sousindata;
     }
 }

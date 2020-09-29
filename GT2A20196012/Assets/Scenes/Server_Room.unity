@@ -273,7 +273,8 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: -9.993872e-10, z: 7.38e-43, w: -0.0000000016665318}
+  m_BoundingSphereOverride: {x: -4.337603e-19, y: -3.637979e-12, z: 1.5046328e-36,
+    w: 2.842171e-14}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -424,9 +425,9 @@ MonoBehaviour:
   - {fileID: 8893388403007336615, guid: 1f3c198fdcbf62a46a37d9e2450c821a, type: 3}
   starg:
   - {fileID: 4112511969592316709, guid: 12e496a3df14e4f49a418fe00bbe153c, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8424995563419193836, guid: d8ed205ebfdd3554493e123115ef2ec8, type: 3}
+  - {fileID: 742540450430978348, guid: d3b5c193bf397c440b5df85ee93dff0c, type: 3}
+  - {fileID: 5310895802152083980, guid: d46db218266d2274ba89b6834bc569ae, type: 3}
   Itemobj: {fileID: 1063984535970824734, guid: 3ee1f94ad59c8974b9c33763747243f0, type: 3}
   t: {fileID: 133798358}
 --- !u!1 &1851395090
