@@ -5,7 +5,7 @@ using System;
 public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリプト 当たり判定も管理
 {
     Vector3 iti,sousiniti;//座標
-    BoxCollider bx;
+    CapsuleCollider bx;
     Quaternion Rote,sosusinRote;//回転
     GameObject utu, tama;
     public LayerMask mask1;
@@ -20,7 +20,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         Maxcount = Server_RoomSystem.Maxwall;
         MaxLap = Server_RoomSystem.Lap;
         tama = Resources.Load("Tama") as GameObject;
-        bx = GetComponent<BoxCollider>();
+        bx = GetComponent<CapsuleCollider>();
         utu = transform.Find("Cube").gameObject;
         count = 1;
         Lap = 1;

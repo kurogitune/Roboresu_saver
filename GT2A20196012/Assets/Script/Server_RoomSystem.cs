@@ -671,7 +671,7 @@ public class Server_RoomSystem : MonoBehaviour
             var tcp = lisetensr.AcceptTcpClient();//クライアントが接続しようとしたら 
             NetworkStream ns = tcp.GetStream();
             Debug.Log("接続処理開始");
-            if (client.Count > client.Capacity) return;
+            if (client.Count > client.Capacity) { Debug.Log("人数最大"); return;  }
             client.Add(ns);
             tuusin.TCPsosin_sitei(ns,string.Format("{0}",client.Count));
             Debug.Log("クライアント接続完了");

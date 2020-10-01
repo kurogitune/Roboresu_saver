@@ -273,7 +273,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1, y: 1, z: 1, w: 1}
+  m_BoundingSphereOverride: {x: 0, y: 10.000001, z: 8, w: -10.666667}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -418,10 +418,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player_model:
-  - {fileID: 76713494723657498, guid: babb2d839c2baf64fb19472883766618, type: 3}
-  - {fileID: 1090042102105069596, guid: 402d7a3f94263c54189c51bb563240cf, type: 3}
-  - {fileID: 700536470232670349, guid: 8fc2d4699a55dc94f8fecd1c2bc35a53, type: 3}
-  - {fileID: 8893388403007336615, guid: 1f3c198fdcbf62a46a37d9e2450c821a, type: 3}
+  - {fileID: 4668398405988682034, guid: 898047aad35c840419f63e3a1543e272, type: 3}
+  - {fileID: 7253653403078448508, guid: a7fecfb087380524aa47e88f0aec4124, type: 3}
+  - {fileID: 4698244290667922872, guid: 2f21a71335b093a48b31ee062ec381fe, type: 3}
+  - {fileID: 3186042429978882593, guid: 0dd74c7cb9726c047a56a82db599059a, type: 3}
   starg:
   - {fileID: 4112511969592316709, guid: 12e496a3df14e4f49a418fe00bbe153c, type: 3}
   - {fileID: 8424995563419193836, guid: d8ed205ebfdd3554493e123115ef2ec8, type: 3}
