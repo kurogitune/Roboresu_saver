@@ -163,7 +163,7 @@ public class Server_RoomSystem : MonoBehaviour
             }
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
-            int[] Max_Lap = { 5,5,2,1 };//マップの周回数
+            int[] Max_Lap = { 5,2,2,1 };//マップの周回数
             Starg= Instantiate(starg[StargNo-1]);
             Lap = Max_Lap[StargNo - 1];
             List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
@@ -668,13 +668,18 @@ public class Server_RoomSystem : MonoBehaviour
     {
         while (Tuusin)
         {
-            var tcp = lisetensr.AcceptTcpClient();//クライアントが接続しようとしたら 
-            NetworkStream ns = tcp.GetStream();
-            Debug.Log("接続処理開始");
-            if (client.Count > client.Capacity) { Debug.Log("人数最大"); return;  }
-            client.Add(ns);
-            tuusin.TCPsosin_sitei(ns,string.Format("{0}",client.Count));
-            Debug.Log("クライアント接続完了");
+            try
+            {
+                var tcp = lisetensr.AcceptTcpClient();//クライアントが接続しようとしたら 
+                NetworkStream ns = tcp.GetStream();
+                Debug.Log("接続処理開始");
+                if (client.Count > client.Capacity) { Debug.Log("人数最大"); return; }
+                client.Add(ns);
+                tuusin.TCPsosin_sitei(ns, string.Format("{0}", client.Count));
+                Debug.Log("クライアント接続完了");
+            }
+            catch { Debug.Log("クライアント受け入れエラー"); }
+
         }
     }
 

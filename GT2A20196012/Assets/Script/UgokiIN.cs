@@ -93,7 +93,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     {
         if (other.tag == "sokusi")//即死判定に当たったら
         {
-            hit = 4;
+            hit = 5;
             Debug.Log("即死");
         }
       

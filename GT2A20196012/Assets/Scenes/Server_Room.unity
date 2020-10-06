@@ -326,8 +326,8 @@ Camera:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 4
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -348,7 +348,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 32
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -424,7 +424,7 @@ MonoBehaviour:
   - {fileID: 3186042429978882593, guid: 0dd74c7cb9726c047a56a82db599059a, type: 3}
   starg:
   - {fileID: 4112511969592316709, guid: 12e496a3df14e4f49a418fe00bbe153c, type: 3}
-  - {fileID: 8424995563419193836, guid: d8ed205ebfdd3554493e123115ef2ec8, type: 3}
+  - {fileID: 5543672378186635818, guid: 89f8a0948fba87946a664d253ba5091a, type: 3}
   - {fileID: 742540450430978348, guid: d3b5c193bf397c440b5df85ee93dff0c, type: 3}
   - {fileID: 5310895802152083980, guid: d46db218266d2274ba89b6834bc569ae, type: 3}
   Itemobj: {fileID: 1063984535970824734, guid: 3ee1f94ad59c8974b9c33763747243f0, type: 3}
