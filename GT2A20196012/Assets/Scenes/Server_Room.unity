@@ -418,10 +418,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player_model:
-  - {fileID: 4668398405988682034, guid: 898047aad35c840419f63e3a1543e272, type: 3}
-  - {fileID: 7253653403078448508, guid: a7fecfb087380524aa47e88f0aec4124, type: 3}
-  - {fileID: 4698244290667922872, guid: 2f21a71335b093a48b31ee062ec381fe, type: 3}
-  - {fileID: 3186042429978882593, guid: 0dd74c7cb9726c047a56a82db599059a, type: 3}
+  - {fileID: 6247973980538221033, guid: 7f92a86cde016d240bb7a2e93dfc35aa, type: 3}
+  - {fileID: 6569061486541764496, guid: 3acf0492ab6116c4d9886f1712b0f562, type: 3}
+  - {fileID: 1915895380897196092, guid: 678aafdf9100cb044b726e1ae771e3ac, type: 3}
+  - {fileID: 2534128000549421328, guid: d491d29e286ec1747bab26bd3f2647a6, type: 3}
   starg:
   - {fileID: 4112511969592316709, guid: 12e496a3df14e4f49a418fe00bbe153c, type: 3}
   - {fileID: 5543672378186635818, guid: 89f8a0948fba87946a664d253ba5091a, type: 3}
@@ -429,6 +429,7 @@ MonoBehaviour:
   - {fileID: 5310895802152083980, guid: d46db218266d2274ba89b6834bc569ae, type: 3}
   Itemobj: {fileID: 1063984535970824734, guid: 3ee1f94ad59c8974b9c33763747243f0, type: 3}
   t: {fileID: 133798358}
+  MaskNo: 9
 --- !u!1 &1851395090
 GameObject:
   m_ObjectHideFlags: 0

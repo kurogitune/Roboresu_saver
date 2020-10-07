@@ -26,6 +26,14 @@ namespace System.Expansion//自作拡張
             zyusinudp = null;
         }
 
+        public static  void IPdataKill()//クライアントのIPをリセット
+        {
+            for(int i=0;i<IPdata.Length ; i++)
+            {
+                IPdata[i] = null;
+            }
+        }
+
         public static void UDPIN(IPAddress ip, int portNo)//UDPデータを代入 ipアドレス　使用ポート最初の番号
         {
             for (int i = 0; i < zyusinudp.Length; i++)

@@ -14,10 +14,15 @@ using System.IO;
 
 public class Server_RoomSystem : MonoBehaviour
 { 
+    [Header("プレイヤーモデル")]
     public GameObject[] Player_model = new GameObject[4];//プレイヤーのモデル
+    [Header("ステージデータ")]
     public GameObject[] starg = new GameObject[4];//使用するステージ
+    [Header("アイテムモデル")]
     public GameObject Itemobj;//アイテムのオブジェクト
     public Text t;
+    [Header("各プレイヤーで使用するLayerMask初期番号")]
+    public int MaskNo;
 
     public static  int Lap;//ステージを回る数
     public static int Maxwall;//判定用の最大数
@@ -56,7 +61,7 @@ public class Server_RoomSystem : MonoBehaviour
 
         try
         {
-            var tcp = new TcpClient("127.0.0.1", 2003);//マスターサーバーに接続用
+            var tcp = new TcpClient("127.0.0.1", 2003);//クライアント受け入れサーバーに接続用
             tuusin.nstIN(tcp.GetStream());
             string data=  tuusin.TCPzyusinTime_NO();
             string[] data2 = data.Split('_');
@@ -64,13 +69,13 @@ public class Server_RoomSystem : MonoBehaviour
             {
                 case "1111":
                     t.text = "接続完了";
-                    tuusin.TCPsosin(strIPAddress);//マスターサーバーに部屋のIPを送信
+                    tuusin.TCPsosin(strIPAddress);//クライアント受け入れサーバーに部屋のIPを送信
                     portNo = int.Parse(data2[1]);
                     tuusin.UDPIN(ipAdd,portNo+1);//UDPデータ代入
                     Debug.Log("UDP受信待機　ip　" +ipAdd);
                     Debug.Log("UDP受信待機port　" +portNo+1);
                     Task.Run(() => client_tuusin());//クライアントとの通信(TPC)開始
-                    Task.Run(() => master_savertusin());//マスターサーバとの(TPC)通信開始
+                    Task.Run(() => master_savertusin());//クライアント受け入れサーバーとの(TPC)通信開始
                     lisetensr = new TcpListener(ipAdd, portNo);// クライアント受け入れ用
                     lisetensr.Start();
                     Debug.Log("TCP受信待機　ip　" + ipAdd);
@@ -120,6 +125,7 @@ public class Server_RoomSystem : MonoBehaviour
             Debug.Log("部屋をリセットします");
             Lap = Maxwall = 0;
             Destroy(Starg);
+            tuusin.IPdataKill();
             for(int i=0;i<PlayerModelData.Length ; i++)//モデル消去
             {
                 if (PlayerModelData[i] != null)
@@ -156,6 +162,7 @@ public class Server_RoomSystem : MonoBehaviour
                 {
                     GameObject g = Instantiate(Player_model[kitai_No[j]-1]);
                     g.name = j.ToString();
+                    g.layer = MaskNo+j;
                     PlayerModelData[j] = g;
                     INsystem[j] = g.GetComponent<UgokiIN>();
                 }
@@ -316,7 +323,7 @@ public class Server_RoomSystem : MonoBehaviour
         //ここまで
     }
 
-    void master_savertusin()//マスターサーバーに部屋の状態を送信
+    void master_savertusin()//クライアント受け入れサーバーに部屋の状態を送信
     {
         while (Tuusin)
         {
@@ -687,11 +694,14 @@ public class Server_RoomSystem : MonoBehaviour
 
     //以下はデータ変換用
 
-    Tuple<Vector3,Quaternion,int,int> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる
+    Tuple<Vector3,Quaternion,int,int,Vector3,Quaternion> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる 最大6個
     {
         string[] data = s.Split(',');
         return Tuple.Create(new Vector3(float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])),
-                            new Quaternion(float.Parse(data[3]), float.Parse(data[4]), float.Parse(data[5]), float.Parse(data[6])),int.Parse(data[7]),int.Parse(data[8]));
-        //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  
+                            new Quaternion(float.Parse(data[3]), float.Parse(data[4]), float.Parse(data[5]), float.Parse(data[6])),
+                            int.Parse(data[7]),int.Parse(data[8]),
+                            new Vector3(float.Parse(data[9]), float.Parse(data[10]), float.Parse(data[11])),
+                            new Quaternion(float.Parse(data[12]), float.Parse(data[13]), float.Parse(data[14]), float.Parse(data[15])));
+        //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  攻撃地点　攻撃地点の回転率
     }
 }

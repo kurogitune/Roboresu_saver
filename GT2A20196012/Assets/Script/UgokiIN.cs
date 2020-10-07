@@ -7,9 +7,18 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     Vector3 iti,sousiniti;//座標
     CapsuleCollider bx;
     Quaternion Rote,sosusinRote;//回転
-    GameObject utu, tama;
-    public LayerMask mask1;
 
+    Vector3 Hanteiiti;
+    Quaternion HanteiRote;
+    [Header("機体種類 true:近距離 false:遠距離")]
+    public bool kin_enn;
+
+    [Header("近距離当たり判定")]
+    public GameObject Hantei;
+    [Header("遠距離弾")]
+    public GameObject Tama;
+
+    GameObject kinhantei;
     int Attack,hit,Gool,Des,Itemget,Rank;//攻撃　攻撃が自分に当たったか ゴールしたか 死んだか アイテムをゲットしたか 自分の順位
 
     int Lap,MaxLap,count, Maxcount,hanteiCount;//現在のLap数 Lapの最大値数　現在の壁判定用　最大の壁判定番号 順位判定用
@@ -19,12 +28,16 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     {
         Maxcount = Server_RoomSystem.Maxwall;
         MaxLap = Server_RoomSystem.Lap;
-        tama = Resources.Load("Tama") as GameObject;
         bx = GetComponent<CapsuleCollider>();
-        utu = transform.Find("Cube").gameObject;
         count = 1;
         Lap = 1;
         hanteiCount = 1;
+        if (kin_enn)
+        {
+            kinhantei = Instantiate(Hantei);
+            kinhantei.SetActive(false);
+            kinhantei.layer = gameObject.layer;
+        }
     }
 
     // Update is called once per frame
@@ -37,20 +50,26 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         switch (Attack)//攻撃したら
         {
             case 1://攻撃
-                //GameObject g = Instantiate(tama);
-                //g.transform.position = utu.transform.position;
-                //g.GetComponent<tama>().utu(utu.transform.forward*1000);
-                //Debug.Log("生成");
-                RaycastHit hit;
-                Ray ray=new Ray(utu.transform.position,transform.forward);
-                if(Physics.Raycast(ray, out hit,10,mask1))
+
+                if (kin_enn)
                 {
-                    if (hit.collider.gameObject.tag == "Player")
-                    {
-                        hit.collider.gameObject.GetComponent<UgokiIN>().Tamahit();
-                    }
+                    kinhantei.SetActive(true);
+                    kinhantei.transform.position = Hanteiiti;
+                    kinhantei.transform.rotation = HanteiRote;
+                }
+                else
+                {
+                    GameObject g = Instantiate(Tama);
+                    g.transform.position = Hanteiiti;
+                    g. transform.rotation = HanteiRote;
+                    g.layer = gameObject.layer;
+                    g.GetComponent<tama>().utu(Hanteiiti*2000);
                 }
                 Attack = 0;
+                if (kin_enn)
+                {
+                    kinhantei.SetActive(false);
+                }
                 break;
         }
 
@@ -66,13 +85,15 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         Debug.Log("周回数  "+Lap+"  壁count   "+count);
     }
 
-    public  void trIN(Tuple<Vector3,Quaternion,int,int>tp)//クライアントからのデータを代入　座標　回転　
+    public  void trIN(Tuple<Vector3,Quaternion,int,int,Vector3,Quaternion>tp)//クライアントからのデータを代入　座標　回転　
     {
         iti = tp.Item1;
         Rote = tp.Item2;
         if (Attack==0)
             Attack = tp.Item3;
         Des = tp.Item4;
+        Hanteiiti = tp.Item5;
+        HanteiRote = tp.Item6;
     }
 
     public string trOUT()//モデルの情報を文字列に変換
@@ -82,11 +103,6 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                                 sosusinRote.x,sosusinRote.y,sosusinRote.z,sosusinRote.w,
                                 Attack,Des,hit,Gool,Itemget,Lap,Rank);
         // 座標x,y,z　回転z,y,z,w　攻撃 死んだか　当たった　ゴール　アイテムをゲット　周回数　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
-    }
-
-    public void Tamahit()
-    {
-            hit = 2;
     }
 
     private void OnTriggerEnter(Collider other)
