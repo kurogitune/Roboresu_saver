@@ -5,12 +5,14 @@ TagManager:
   serializedVersion: 2
   tags:
   - gool
-  - tama
   - sokusi
   - item
   - lacewall
   - Kobusi
   - Sword
+  - Tama_S
+  - Tama_M
+  - tama
   layers:
   - Default
   - TransparentFX

@@ -245,35 +245,35 @@ public class Server_RoomSystem : MonoBehaviour
                 switch (data[0])
                 {
                     case "1":
-                        INsystem[0].trIN(aiteTr(data[1]));
+                        INsystem[0].CliantData_IN(data[1]);
                         break;
 
                     case "2":
-                        INsystem[1].trIN(aiteTr(data[1]));
+                        INsystem[1].CliantData_IN(data[1]);
                         break;
 
                     case "3":
-                        INsystem[2].trIN(aiteTr(data[1]));
+                        INsystem[2].CliantData_IN(data[1]);
                         break;
 
                     case "4":
-                        INsystem[3].trIN(aiteTr(data[1]));
+                        INsystem[3].CliantData_IN(data[1]);
                         break;
 
                     case "5":
-                        INsystem[4].trIN(aiteTr(data[1]));
+                        INsystem[4].CliantData_IN(data[1]);
                         break;
 
                     case "6":
-                        INsystem[5].trIN(aiteTr(data[1]));
+                        INsystem[5].CliantData_IN(data[1]);
                         break;
 
                     case "7":
-                        INsystem[6].trIN(aiteTr(data[1]));
+                        INsystem[6].CliantData_IN(data[1]);
                         break;
 
                     case "8":
-                        INsystem[7].trIN(aiteTr(data[1]));
+                        INsystem[7].CliantData_IN(data[1]);
                         break;
                     default:
                         break;
@@ -293,8 +293,6 @@ public class Server_RoomSystem : MonoBehaviour
 
         try//ここで送信データ作成し送信を行う処理
         {
-            sousindt += String.Format("{0}_{1}", 0, ItemList.Count) + "/";//サーバールームのデータ作成
-                         //送信データ//アイテム個数　各アイテムの状態
             for (int i = 0; i < INsystem.Length; i++)
             {
                 if (INsystem[i] != null)
@@ -425,6 +423,7 @@ public class Server_RoomSystem : MonoBehaviour
                         for (int i = 0; i < client.Count; i++)//各クライアントに送信
                         {
                             tuusin.TCPsosin_sitei(client[i], sousindata);
+                            client[i].Close();
                         }
                         UDP_Move = false;
                         stageSelect = false;
@@ -688,20 +687,5 @@ public class Server_RoomSystem : MonoBehaviour
             catch { Debug.Log("クライアント受け入れエラー"); }
 
         }
-    }
-
-
-
-    //以下はデータ変換用
-
-    Tuple<Vector3,Quaternion,int,int,Vector3,Quaternion> aiteTr(string s)//受信したプレイヤーのデータを変換 Tupleは複数のデータを返すことができる   複数のアイテムは　Item.1 Item.2となる 最大6個
-    {
-        string[] data = s.Split(',');
-        return Tuple.Create(new Vector3(float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])),
-                            new Quaternion(float.Parse(data[3]), float.Parse(data[4]), float.Parse(data[5]), float.Parse(data[6])),
-                            int.Parse(data[7]),int.Parse(data[8]),
-                            new Vector3(float.Parse(data[9]), float.Parse(data[10]), float.Parse(data[11])),
-                            new Quaternion(float.Parse(data[12]), float.Parse(data[13]), float.Parse(data[14]), float.Parse(data[15])));
-        //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  攻撃地点　攻撃地点の回転率
     }
 }
