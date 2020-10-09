@@ -86,7 +86,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                     g.transform.position = zyuukouhantei.transform.position;
                     g. transform.rotation = zyuukouhantei.transform.rotation;
                     g.layer = gameObject.layer;
-                    g.GetComponent<tama>().utu(zyuukou.transform.up*2000);
+                    g.GetComponent<tama>().utu(zyuukouhantei.transform.up*2000);
                 }
                 Attack = 0;
                 break;
@@ -135,13 +135,13 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         //座標　x,y,z    回転x,y,z,w　攻撃 死んだか  攻撃地点　攻撃地点の回転率　アニメーションデータ　アイテム使用データ
     }
 
-    public string trOUT()//モデルの情報を文字列に変換
+    public string trOUT()//モデルの情報を送信用文字列に変換
     {
-          return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
+          return string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                                 sousiniti.x,sousiniti.y,sousiniti.z,
                                 sosusinRote.x,sosusinRote.y,sosusinRote.z,sosusinRote.w,
                                 Attack,Des, Anime_data,Itemdata,
-                                hit,Gool,Itemget,Lap,Rank);
+                                hit,Gool,Itemget,Lap,Rank,EnemyKill);
         // 座標x,y,z　回転z,y,z,w　攻撃 死んだか アニメーション（送信先の敵情報）
         //当たった　ゴール　アイテムをゲット　周回数　敵を殺したか（送信先のクライアントのデータ）
     }
@@ -189,6 +189,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
 
     public void OnCollisionEnter(Collision collision)
     {
+        Debug.Log("攻撃当たった");
         if (Muteki) return;
         if (collision.gameObject.tag == "Tama_M")//マシンガン弾Hit
         {
