@@ -7,7 +7,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     Vector3 iti,sousiniti;//座標
     CapsuleCollider bx;
     Quaternion Rote,sosusinRote;//回転
-
+    UgokiIN GUgokiData;
     Vector3 Hanteiiti;
     Quaternion HanteiRote;
     GameObject kinhantei,zyuukouhantei;//近接当たり判定 遠距離銃口位置
@@ -19,7 +19,8 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     public GameObject zyuukou;
     [Header("遠距離弾")]
     public GameObject Tama;
-
+    [Header("遠距離種類")]
+    public bool M_S;//trueマシンガン　false:スナイパー
 
     [Header("攻撃当たった後の無敵時間")]
     public float HitMutekiTime;
@@ -27,7 +28,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     int Attack,hit,Gool,Des,Itemget,Rank,EnemyKill,Anime_data,Itemdata;//攻撃　攻撃が自分に当たったか ゴールしたか 死んだか アイテムをゲットしたか 自分の順位 相手を殺したか アニメーションデータ　使用したアイテムデータ
 
     int Lap,MaxLap,count, Maxcount,hanteiCount;//現在のLap数 Lapの最大値数　現在の壁判定用　最大の壁判定番号 順位判定用
-    bool PlayerGool,Muteki;//プレイヤーがゴールしたか 一時的に無敵か
+    bool PlayerGool,Muteki,Desb;//プレイヤーがゴールしたか 一時的に無敵か 死んでいるか
     float MutekiTime;//攻撃を食らっての一時的な無敵時間
     // Start is called before the first frame update
     void Start()
@@ -54,6 +55,13 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     // Update is called once per frame
     void Update()
     {
+        transform.position = iti;
+        transform.rotation = Rote;
+        sousiniti = transform.position;
+        sosusinRote= transform.rotation;
+
+        if (PlayerGool) return;
+
         if (Muteki)
         {
             MutekiTime -= Time.deltaTime;
@@ -63,11 +71,6 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                 MutekiTime = HitMutekiTime;
             }
         }
-
-        transform.position = iti;
-        transform.rotation = Rote;
-        sousiniti = transform.position;
-        sosusinRote= transform.rotation;
         switch (Attack)//攻撃したら
         {
             case 1://攻撃
@@ -75,6 +78,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                 if (kin_enn)
                 {//近接用攻撃処理
                     kinhantei.SetActive(true);
+                    kinhantei.transform.parent = transform;
                     kinhantei.transform.position = Hanteiiti;
                     kinhantei.transform.rotation = HanteiRote;
                 }
@@ -86,7 +90,10 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                     g.transform.position = zyuukouhantei.transform.position;
                     g. transform.rotation = zyuukouhantei.transform.rotation;
                     g.layer = gameObject.layer;
-                    g.GetComponent<tama>().utu(zyuukouhantei.transform.up*2000);
+                    g.GetComponent<tama>().DataIN(GetComponent<UgokiIN>());
+                    if(M_S) g.GetComponent<tama>().utu(zyuukouhantei.transform.up * 2000);
+                    else g.GetComponent<tama>().utu(zyuukouhantei.transform.up * 4000);
+
                 }
                 Attack = 0;
                 break;
@@ -106,6 +113,12 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
                 break;
             case 1:
                 bx.enabled = false;
+                if (GUgokiData != null)
+                {
+                    GUgokiData.KillDes();
+                    DataDes();
+                    Debug.Log("相手殺した");
+                }
                 break;
         }
         Debug.Log("周回数  "+Lap+"  壁count   "+count);
@@ -166,9 +179,10 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
             if (Lap>=MaxLap& count >= Maxcount & other.gameObject.GetComponent<lacewall>().NoOUT() == 1)
             {
                 Gool = 1;
-                PlayerGool = true;
+                hanteiCount++;
                 Server_RoomSystem.Gool.Add(true);
                 Debug.Log(gameObject.name + "ゴール");
+                PlayerGool = true;
             }
             else if (count>=Maxcount& other.gameObject.GetComponent<lacewall>().NoOUT() == 1)//最大数の壁に当たった後に最初の壁に当たったら
             {
@@ -195,28 +209,43 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
         {
             hit = 1;
             Muteki = true;
+            GUgokiData = collision.gameObject.GetComponent<tama>().DataOUT();
+            Invoke("DataDes", 1);
         }
 
         if (collision.gameObject.tag == "Tama_S")//スナイパー弾Hit
         {
             hit = 2;
             Muteki = true;
-
+            GUgokiData = collision.gameObject.GetComponent<tama>().DataOUT();
+            Invoke("DataDes", 1);
         }
 
         if (collision.gameObject.tag == "Kobusi")//防御Hit
         {
             hit = 3;
             Muteki = true;
-
+            GUgokiData = collision.gameObject.transform.parent.GetComponent<UgokiIN>();
+            Invoke("DataDes", 1);
         }
 
         if (collision.gameObject.tag == "Sword")//剣Hit
         {
             hit = 4;
             Muteki = true;
-
+            GUgokiData = collision.gameObject.transform.parent.GetComponent<UgokiIN>();
+            Invoke("DataDes", 1);
         }
+    }
+
+    void DataDes()
+    {
+        GUgokiData = null;
+    }
+
+    public void KillDes()//殺したか
+    {
+        EnemyKill = 1;
     }
 
     public Tuple<int,int> RoteData()//周回数を出力
@@ -226,6 +255,7 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
 
     public void RankIN(int i)//順位を代入
     {
+        if (!PlayerGool) return;
         Rank = i;
         Debug.Log(gameObject.name+"  順位 "+i);
     }
@@ -239,5 +269,6 @@ public class UgokiIN : MonoBehaviour//モデルの動きをぶち込むスクリ
     {
         hit = 0;
         Itemget = 0;
+        EnemyKill = 0;
     }
 }

@@ -81,7 +81,6 @@ public class Server_RoomSystem : MonoBehaviour
                     Debug.Log("TCP受信待機　ip　" + ipAdd);
                     Debug.Log("TCP受信待機port　" + portNo);
                     Task.Run(() => TCPclientIN());//クライアント受入待機開始
-                    Invoke("tout",3);
                     break;
 
                 case "3333":
@@ -98,8 +97,7 @@ public class Server_RoomSystem : MonoBehaviour
             Tuusin = false;
         }
 
-
-
+        Invoke("tout", 3);
     }
     void tout()
     {
@@ -170,7 +168,7 @@ public class Server_RoomSystem : MonoBehaviour
             }
             Debug.Log("作成終了");
             Debug.Log("ステージ作成開始");
-            int[] Max_Lap = { 5,2,2,1 };//マップの周回数
+            int[] Max_Lap = { 1,2,2,1 };//マップの周回数
             Starg= Instantiate(starg[StargNo-1]);
             Lap = Max_Lap[StargNo - 1];
             List<GameObject> rodobj = objList.tag_All_obj("item");//アイテムオブジェクトを全て取得
